@@ -48,4 +48,4 @@ You can also open a view directly, which is how the screenshots were taken: `ind
 
 ## Credits
 
-Built with Claude (Anthropic's Claude Code), which I used as a pair programmer for the page, the data shapes and the check-up prompt.
+Built with Claude (Anthropic's Claude Code)
