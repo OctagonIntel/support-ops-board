@@ -1,0 +1,6 @@
+# Written by the page in real use; holds personal moves and notes.
+board-edits.js
+sources/
+cases/
+.DS_Store
+Thumbs.db

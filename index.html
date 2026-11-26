@@ -1,0 +1,1706 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Support Ops Board</title>
+<style>
+:root{
+  --page:#f4f5f7;--rail:#ffffff;--col:#ebedf0;--card:#ffffff;--card-hover:#fbfbfc;--overlay:#ffffff;
+  --text:#2c3e5d;--strong:#172b4d;--subtle:#626f86;--subtlest:#8590a2;--border:#091e421f;--input:#ffffff;--input-border:#c1c7d0;
+  --brand:#0c66e4;--brand-text:#ffffff;--link:#0c66e4;--hover:#091e420f;--selected:#e9f2ff;
+  --float:0 1px 2px rgba(9,30,66,.10),0 4px 12px rgba(9,30,66,.08);
+  --float-hover:0 2px 4px rgba(9,30,66,.10),0 12px 28px rgba(9,30,66,.14);
+  --float-drag:0 20px 44px rgba(9,30,66,.28);
+  --c-open:#2f6fe0;--c-client:#0f8b8d;--c-eng:#7357d6;--c-closed:#1f845a;
+  --ok:#1f845a;--bad:#c9372c;--wait:#a5781b;--muted-dot:#8590a2;
+  --v-client:#2f6fe0;--v-expected:#0f8b8d;--v-known:#ae4787;--v-new:#c9372c;--v-eng:#7357d6;
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    --page:#161a1d;--rail:#1d2125;--col:#1d2125;--card:#2a3036;--card-hover:#2f363d;--overlay:#2a3036;
+    --text:#b6c2cf;--strong:#dee4ea;--subtle:#9fadbc;--subtlest:#7d8a99;--border:#a6c5e21f;--input:#22272b;--input-border:#454f59;
+    --brand:#579dff;--brand-text:#101214;--link:#79adff;--hover:#a1bdd914;--selected:#1c2b41;
+    --float:0 1px 2px rgba(0,0,0,.35),0 6px 16px rgba(0,0,0,.28);
+    --float-hover:0 2px 4px rgba(0,0,0,.4),0 14px 32px rgba(0,0,0,.42);
+    --float-drag:0 24px 52px rgba(0,0,0,.6);
+    --c-open:#579dff;--c-client:#5bc4c6;--c-eng:#9f8fef;--c-closed:#4bce97;
+    --ok:#4bce97;--bad:#f87168;--wait:#e2b203;--muted-dot:#7d8a99;
+    --v-client:#579dff;--v-expected:#5bc4c6;--v-known:#e774bb;--v-new:#f87168;--v-eng:#9f8fef;
+  }
+}
+:root[data-theme="dark"]{
+  --page:#161a1d;--rail:#1d2125;--col:#1d2125;--card:#2a3036;--card-hover:#2f363d;--overlay:#2a3036;
+  --text:#b6c2cf;--strong:#dee4ea;--subtle:#9fadbc;--subtlest:#7d8a99;--border:#a6c5e21f;--input:#22272b;--input-border:#454f59;
+  --brand:#579dff;--brand-text:#101214;--link:#79adff;--hover:#a1bdd914;--selected:#1c2b41;
+  --float:0 1px 2px rgba(0,0,0,.35),0 6px 16px rgba(0,0,0,.28);--float-hover:0 2px 4px rgba(0,0,0,.4),0 14px 32px rgba(0,0,0,.42);--float-drag:0 24px 52px rgba(0,0,0,.6);
+  --c-open:#579dff;--c-client:#5bc4c6;--c-eng:#9f8fef;--c-closed:#4bce97;
+  --ok:#4bce97;--bad:#f87168;--wait:#e2b203;--muted-dot:#7d8a99;
+  --v-client:#579dff;--v-expected:#5bc4c6;--v-known:#e774bb;--v-new:#f87168;--v-eng:#9f8fef;
+}
+*{box-sizing:border-box}
+html,body{margin:0;background:var(--page);color:var(--text);font:14px/20px "Segoe UI",system-ui,-apple-system,sans-serif}
+body.is-dragging{cursor:grabbing;user-select:none}
+button{font:inherit;color:inherit;cursor:pointer}
+a{color:var(--link)}
+svg{display:block;flex:none}
+.dot{width:8px;height:8px;border-radius:50%;background:var(--d);flex:none;display:inline-block}
+
+/* top bar */
+.topbar{display:flex;align-items:center;gap:12px;height:52px;padding:0 20px;background:var(--rail);border-bottom:1px solid var(--border)}
+.logo{display:flex;align-items:center;gap:8px;font-weight:600;color:var(--strong);font-size:15px}
+.logo i{width:26px;height:26px;border-radius:7px;background:var(--brand);display:grid;place-items:center;color:var(--brand-text);font-style:normal;font-size:13px;font-weight:700}
+.grow{flex:1}
+.btn{display:inline-flex;align-items:center;gap:6px;height:32px;padding:0 12px;border-radius:6px;border:0;background:var(--hover);color:var(--text);font-weight:500;white-space:nowrap}
+.btn:hover{background:color-mix(in srgb,var(--text) 14%,transparent)}
+.btn.primary{background:var(--brand);color:var(--brand-text);font-weight:600}
+.btn.primary:hover{filter:brightness(1.08)}
+.btn.subtle{background:transparent}
+.btn.subtle:hover{background:var(--hover)}
+.btn.icon{width:32px;padding:0;justify-content:center}
+.btn.on{background:var(--selected);color:var(--link)}
+.save{display:inline-flex;align-items:center;gap:8px;font-size:12px;color:var(--subtle);padding:0 4px 0 10px;height:32px;border-radius:6px;border:1px solid var(--border)}
+.save .dot{--d:var(--muted-dot)}
+.save.ok .dot{--d:var(--ok)}
+.save.warn .dot{--d:var(--wait)}
+.save .btn{height:24px;padding:0 8px;font-size:12px}
+
+/* layout */
+.page{max-width:1680px;margin:0 auto;padding:20px 20px 40px}
+.head{display:flex;align-items:flex-end;gap:16px;flex-wrap:wrap;margin-bottom:14px}
+.crumbs{color:var(--subtle);font-size:13px}
+.crumbs span{margin:0 6px}
+h1{font-size:24px;line-height:30px;font-weight:600;color:var(--strong);margin:2px 0 0}
+.tabs{display:flex;gap:2px;background:var(--rail);border-radius:8px;padding:3px;box-shadow:var(--float)}
+.tab{display:flex;align-items:center;gap:6px;background:none;border:0;padding:5px 12px;border-radius:6px;color:var(--subtle);font-weight:500}
+.tab:hover{color:var(--text)}
+.tab[aria-selected="true"]{background:var(--selected);color:var(--link)}
+.tab .n{font-size:11px;background:var(--hover);border-radius:8px;padding:0 6px;color:var(--text)}
+.layout{display:grid;grid-template-columns:230px minmax(0,1fr) 270px;gap:20px;align-items:start}
+.rail{background:var(--rail);border-radius:12px;box-shadow:var(--float);padding:16px;position:sticky;top:16px}
+.rail h3{font-size:11.5px;text-transform:uppercase;letter-spacing:.06em;color:var(--subtle);margin:0 0 10px;font-weight:600}
+.rail h3:not(:first-child){margin-top:20px}
+.big{font-size:34px;line-height:38px;font-weight:650;color:var(--strong);font-variant-numeric:tabular-nums}
+.big small{font-size:13px;font-weight:500;color:var(--subtle);margin-left:6px}
+.stat{display:flex;align-items:center;gap:8px;padding:5px 0;font-size:13px}
+.stat b{margin-left:auto;font-variant-numeric:tabular-nums;color:var(--strong)}
+.meter{height:6px;border-radius:3px;background:var(--hover);overflow:hidden;margin:2px 0 6px 16px}
+.meter span{display:block;height:100%;background:var(--d);border-radius:3px}
+.kv{display:flex;justify-content:space-between;gap:8px;font-size:13px;padding:4px 0}
+.kv span{color:var(--subtle)}
+.kv b{color:var(--strong);font-weight:600;text-align:right}
+.att{display:flex;gap:8px;align-items:flex-start;width:100%;text-align:left;background:none;border:0;border-radius:8px;padding:7px 8px;margin:0 -8px;width:calc(100% + 16px)}
+.att:hover{background:var(--hover)}
+.att .dot{margin-top:6px}
+.att b{display:block;color:var(--strong);font-weight:500;font-size:13px}
+.att small{display:block;color:var(--subtle);font-size:12px;line-height:16px}
+.none{color:var(--subtlest);font-size:13px}
+
+/* toolbar */
+.toolbar{display:flex;flex-wrap:wrap;align-items:center;gap:8px;margin-bottom:14px}
+.search{position:relative}
+.search input{height:32px;width:220px;padding:0 8px 0 30px;border-radius:6px;border:1px solid var(--input-border);background:var(--input);color:var(--text);font:inherit}
+.search input:focus{outline:2px solid var(--brand);outline-offset:-1px;border-color:transparent}
+.search svg{position:absolute;left:9px;top:9px;color:var(--subtle)}
+.avatars{display:flex;gap:4px}
+.av{width:30px;height:30px;border-radius:50%;display:grid;place-items:center;font-size:11px;font-weight:700;color:#fff;border:0;padding:0;flex:none}
+.av.eu{background:#2f6fe0}.av.us{background:#7357d6}.av.unk{background:#626f86}
+button.av{cursor:pointer;opacity:.75}
+button.av:hover,button.av[aria-pressed="true"]{opacity:1}
+button.av[aria-pressed="true"]{box-shadow:0 0 0 2px var(--page),0 0 0 4px var(--brand)}
+.caret::after{content:"";width:6px;height:6px;border:solid currentColor;border-width:0 1.5px 1.5px 0;transform:rotate(45deg);margin:-3px 0 0 4px}
+
+/* floating menu (card ⋯, status, filters, columns) */
+.pop{position:fixed;z-index:80;min-width:210px;background:var(--overlay);border-radius:8px;box-shadow:var(--float-drag);padding:6px;display:none;border:1px solid var(--border)}
+.pop.open{display:block;animation:pop .12s ease}
+@keyframes pop{from{opacity:0;transform:translateY(-4px)}to{opacity:1;transform:none}}
+.pop .mi{display:flex;align-items:center;gap:10px;width:100%;padding:7px 10px;border:0;border-radius:6px;background:none;text-align:left;white-space:nowrap;color:var(--text)}
+.pop .mi:hover,.pop .mi:focus-visible{background:var(--hover);outline:none}
+.pop .mi.cur{color:var(--link);font-weight:600}
+.pop .mi.cur::after{content:"✓";margin-left:auto}
+.pop .mi.danger{color:var(--bad)}
+.pop .mi:disabled{opacity:.4;cursor:default;background:none}
+.pop .mi .count{margin-left:auto;color:var(--subtle);font-size:12px}
+.pop .mi input{accent-color:var(--brand)}
+.pop hr{border:0;border-top:1px solid var(--border);margin:6px 2px}
+.pop .ttl{font-size:11px;text-transform:uppercase;letter-spacing:.05em;color:var(--subtle);padding:4px 10px 2px}
+.pop .sws{display:flex;gap:6px;padding:6px 10px}
+.pop .sw{width:20px;height:20px;border-radius:50%;border:0;padding:0;background:var(--d)}
+.pop .sw.cur{box-shadow:0 0 0 2px var(--overlay),0 0 0 4px var(--d)}
+
+/* board */
+.board-wrap{overflow-x:auto;padding:2px 2px 10px}
+.board{display:flex;gap:14px;align-items:stretch;min-height:calc(100vh - 230px)}
+.col{flex:1 1 0;min-width:230px;display:flex;flex-direction:column;background:var(--col);border-radius:12px;padding:0 10px 10px;transition:background .15s,box-shadow .15s}
+.col.over{box-shadow:inset 0 0 0 2px var(--cc);background:color-mix(in srgb,var(--cc) 8%,var(--col))}
+.colhead{display:flex;align-items:center;gap:8px;height:48px;padding:0 2px 0 4px;font-size:12px;font-weight:600;color:var(--subtle);text-transform:uppercase;letter-spacing:.04em}
+.colhead .dot{--d:var(--cc)}
+.colhead .cnt{color:var(--text);font-size:12px}
+.colhead .btn.icon{width:28px;height:28px;opacity:0;transition:opacity .1s}
+.col:hover .colhead .btn.icon,.colhead .btn.icon:focus-visible,.colhead .btn.icon.active{opacity:1}
+.colhead input{font:inherit;text-transform:none;font-size:13px;height:28px;width:100%;padding:0 6px;border-radius:6px;border:2px solid var(--brand);background:var(--input);color:var(--text)}
+.colbar{height:3px;border-radius:2px;background:var(--cc);opacity:.7;margin:-4px 4px 10px}
+.cards{display:flex;flex-direction:column;gap:10px;flex:1}
+.cards:has(.card) .empty{display:none}
+.empty{color:var(--subtlest);font-size:12px;text-align:center;padding:18px 4px;border:1px dashed var(--border);border-radius:8px}
+.col .create{display:flex;align-items:center;gap:6px;width:100%;height:32px;margin-top:10px;padding:0 8px;border:0;border-radius:6px;background:none;color:var(--subtle);font-weight:500;text-align:left}
+.col .create:hover{background:var(--hover);color:var(--text)}
+.side{display:flex;flex-direction:column;gap:10px;flex:0 0 52px}
+.addcol{height:44px;border-radius:12px;border:0;background:var(--col);color:var(--subtle);font-size:20px}
+.addcol:hover{color:var(--text);background:var(--hover)}
+.closezone{flex:1;border-radius:12px;border:2px dashed var(--border);display:flex;align-items:center;justify-content:center;color:var(--subtle);font-size:12px;font-weight:600;letter-spacing:.06em;text-transform:uppercase;writing-mode:vertical-rl;transform:rotate(180deg);gap:8px;transition:all .15s}
+.closezone .dot{--d:var(--c-closed)}
+body.is-dragging .closezone{border-color:var(--c-closed);color:var(--c-closed)}
+.closezone.over{background:color-mix(in srgb,var(--c-closed) 14%,transparent);border-style:solid}
+
+.card{position:relative;background:var(--card);border-radius:10px;box-shadow:var(--float);padding:12px 12px 10px 14px;cursor:grab;transition:transform .16s ease,box-shadow .16s ease,background .16s}
+.card:hover{transform:translateY(-3px);box-shadow:var(--float-hover);background:var(--card-hover)}
+.card:focus-visible{outline:2px solid var(--brand);outline-offset:2px}
+.card.accent::before{content:"";position:absolute;left:0;top:12px;bottom:12px;width:3px;border-radius:0 3px 3px 0;background:var(--ac)}
+.card.placeholder{opacity:.3;box-shadow:none;transform:none;outline:2px dashed var(--brand);outline-offset:-2px}
+.card.ghost{position:fixed;z-index:70;pointer-events:none;margin:0;transform:rotate(2.5deg) scale(1.03);box-shadow:var(--float-drag);cursor:grabbing;transition:none}
+.card.landed{animation:land .3s ease}
+@keyframes land{from{transform:scale(1.03);box-shadow:var(--float-drag)}to{transform:none}}
+.card .t{color:var(--strong);font-weight:600;line-height:20px;padding-right:26px;display:-webkit-box;-webkit-line-clamp:3;-webkit-box-orient:vertical;overflow:hidden}
+.kebab{position:absolute;top:8px;right:6px;width:26px;height:26px;border:0;border-radius:6px;background:transparent;color:var(--subtle);display:grid;place-items:center;opacity:0;transition:opacity .1s}
+.card:hover .kebab,.kebab:focus-visible,.kebab.active{opacity:1}
+.kebab:hover{background:var(--hover);color:var(--text)}
+.vchip{display:inline-flex;align-items:center;gap:6px;margin-top:8px;font-size:12px;color:var(--text);background:var(--hover);border-radius:6px;padding:2px 8px}
+.vchip .dot{--d:var(--vc)}
+.card .date{color:var(--subtle);font-size:12px;margin-top:8px}
+.card .date.old{color:var(--bad)}
+.card .sig{display:flex;gap:7px;align-items:flex-start;font-size:12px;color:var(--subtle);margin-top:6px;line-height:16px}
+.card .sig .dot{--d:var(--sc);margin-top:4px}
+.card .sig span{display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
+.card .foot{display:flex;align-items:center;flex-wrap:wrap;gap:6px 8px;margin-top:10px;min-height:24px}
+.card .foot>*{flex:none;white-space:nowrap}
+.card .foot>.grow{flex:1 0 0}
+.pts{min-width:22px;height:20px;padding:0 6px;border-radius:10px;background:var(--hover);color:var(--text);font-size:11px;font-weight:600;display:grid;place-items:center}
+.key{display:flex;align-items:center;gap:5px;font-size:12px;font-weight:600;color:var(--subtle)}
+.key a{color:inherit;text-decoration:none}
+.key a:hover{color:var(--link);text-decoration:underline}
+.key.done a,.key.done span{text-decoration:line-through}
+.card .av{width:24px;height:24px;font-size:9px}
+.pend{font-size:10px;font-weight:700;letter-spacing:.03em;text-transform:uppercase;color:var(--link);background:var(--selected);border-radius:4px;padding:0 5px;line-height:18px}
+.cmt{font-size:12px;color:var(--subtle)}
+
+/* closed page */
+.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(250px,1fr));gap:14px}
+
+/* list */
+.listwrap{background:var(--rail);border-radius:12px;box-shadow:var(--float);overflow:auto}
+.list{width:100%;border-collapse:collapse;font-size:14px}
+.list th{text-align:left;font-size:12px;font-weight:600;color:var(--subtle);padding:10px;border-bottom:1px solid var(--border);cursor:pointer;white-space:nowrap;user-select:none}
+.list th:hover{color:var(--text)}
+.list td{padding:10px;border-bottom:1px solid var(--border);vertical-align:middle}
+.list tr:last-child td{border-bottom:0}
+.list tr.row{cursor:pointer}
+.list tr.row:hover td{background:var(--hover)}
+.list .sum{color:var(--strong);font-weight:500}
+.spill{display:inline-flex;align-items:center;gap:6px;font-size:12px;font-weight:600;color:var(--sc);white-space:nowrap}
+.spill .dot{--d:var(--sc)}
+
+/* modals */
+.modal{position:fixed;inset:0;z-index:60;display:none;background:rgba(9,15,25,.22);align-items:flex-start;justify-content:center;padding:56px 16px}
+.modal.on{display:flex}
+.sheet{position:relative;background:color-mix(in srgb,var(--overlay) 80%,transparent);-webkit-backdrop-filter:blur(18px) saturate(1.4);backdrop-filter:blur(18px) saturate(1.4);border:1px solid var(--border);border-radius:12px;box-shadow:var(--float-drag);width:min(1080px,100%);max-height:calc(100vh - 112px);display:flex;flex-direction:column;overflow:hidden;animation:pop .15s ease}
+.sheet .details{background:color-mix(in srgb,var(--overlay) 55%,transparent)}
+/* Jira-style field rows, shared by Create and the card view */
+.jtype{display:flex;align-items:center;gap:8px;font-weight:600;color:var(--strong);font-size:13px}
+.jtype i{width:1px;height:16px;background:var(--border);margin:0 4px}
+.sheet .jsum{width:100%;min-height:0;border:0;background:none;font:inherit;font-size:22px;line-height:28px;font-weight:600;color:var(--strong);padding:4px 6px;margin:0 -6px;border-radius:6px}
+.sheet .jsum::placeholder{color:var(--subtlest)}
+.sheet .jsum:hover{background:var(--hover)}
+.sheet .jsum:focus{outline:2px solid var(--brand);outline-offset:0;background:var(--input)}
+.jname{display:flex;gap:10px;align-items:center;margin-top:4px}
+.jname .sep{color:var(--subtle);font-size:18px;font-weight:600}
+.sheet .jdesc{width:100%;min-height:84px;resize:vertical;border:1px solid transparent;background:var(--hover);font:inherit;color:var(--text);border-radius:8px;padding:8px 10px;margin-top:10px}
+.sheet .jdesc:focus{outline:2px solid var(--brand);outline-offset:-1px;background:var(--input)}
+.jgroup{margin-top:18px;font-size:11.5px;font-weight:600;text-transform:uppercase;letter-spacing:.06em;color:var(--subtle);border-bottom:1px solid var(--border);padding-bottom:6px}
+.jrow{display:grid;grid-template-columns:180px minmax(0,1fr);gap:12px;align-items:center;padding:5px 0}
+.sheet .jrow>label,.jlab{display:flex;align-items:center;gap:9px;font-size:13.5px;color:var(--subtle);font-weight:500;margin:0}
+.jlab svg,.jrow>label svg,.details dt svg{color:var(--subtle);flex:none}
+.sheet .jrow input,.sheet .jrow select{width:100%;font:inherit;color:var(--text);background:transparent;border:1px solid transparent;border-radius:6px;padding:5px 8px;min-height:34px}
+.sheet .jrow input:hover,.sheet .jrow select:hover{background:var(--hover)}
+.sheet .jrow input:focus,.sheet .jrow select:focus{outline:2px solid var(--brand);outline-offset:-1px;background:var(--input)}
+.jrow select option{background:var(--overlay);color:var(--text)}
+.jrow .static{display:flex;align-items:center;gap:8px;padding:5px 8px;color:var(--strong)}
+.jrow .static .av{width:22px;height:22px;font-size:9px}
+.jrow .err{grid-column:2;font-size:12px;color:var(--bad)}
+.lchip{display:inline-flex;align-items:center;font-size:11.5px;line-height:18px;padding:0 7px;border-radius:4px;background:color-mix(in srgb,var(--link) 14%,transparent);color:var(--link);font-weight:500;white-space:nowrap}
+.card .labels{display:flex;gap:4px;flex-wrap:wrap;margin-top:7px}
+.sev{display:inline-flex;align-items:center;gap:6px}
+.sev .dot{--d:var(--sv)}
+.details dt{display:flex;align-items:center;gap:7px}
+.details dl{grid-template-columns:136px 1fr}
+.sheet.small{width:min(620px,100%)}
+.sheet-head{display:flex;align-items:center;gap:8px;padding:16px 20px 6px;color:var(--subtle);font-size:13px}
+.sheet-body{display:grid;grid-template-columns:minmax(0,1fr) 320px;gap:24px;padding:0 20px 22px;overflow-y:auto}
+.sheet h2{font-size:22px;line-height:28px;color:var(--strong);margin:6px 0 12px;font-weight:600}
+.statusbtn{display:inline-flex;align-items:center;gap:8px;height:32px;padding:0 12px;border-radius:6px;border:0;font-weight:600;background:color-mix(in srgb,var(--cc) 18%,transparent);color:var(--cc)}
+.statusbtn .dot{--d:var(--cc)}
+.sigbox{display:flex;gap:8px;align-items:flex-start;margin-top:12px;border-radius:8px;padding:9px 12px;font-size:13px;background:color-mix(in srgb,var(--sc) 12%,transparent)}
+.sigbox .dot{--d:var(--sc);margin-top:6px}
+.sigbox b{color:var(--sc)}
+.sec{margin-top:20px}
+.sec h4{font-size:13px;font-weight:600;color:var(--strong);margin:0 0 6px}
+.sec p{margin:0}
+.links{list-style:none;margin:0;padding:0;border:1px solid var(--border);border-radius:8px;overflow:hidden}
+.links li+li{border-top:1px solid var(--border)}
+.links a{display:flex;align-items:center;gap:10px;padding:9px 12px;text-decoration:none;color:var(--text)}
+.links a:hover{background:var(--hover)}
+.links a b{font-weight:500;color:var(--link)}
+.links a span{margin-left:auto;color:var(--subtle);font-size:12px}
+.comment textarea{width:100%;min-height:64px;resize:vertical;font:inherit;color:var(--text);background:var(--input);border:1px solid var(--input-border);border-radius:8px;padding:8px 10px}
+.comment .row{display:flex;gap:8px;margin-top:8px;align-items:center}
+.cm{display:flex;gap:10px;margin-top:14px}
+.cm .av{width:32px;height:32px;background:#2f6fe0}
+.cm .who{font-weight:600;color:var(--strong)}
+.cm .when{color:var(--subtle);font-size:12px;margin-left:6px}
+.details{border:1px solid var(--border);border-radius:10px;align-self:start}
+.details h3{margin:0;padding:12px 14px;font-size:13px;color:var(--strong);border-bottom:1px solid var(--border)}
+.details dl{display:grid;grid-template-columns:110px 1fr;gap:12px;margin:0;padding:14px;font-size:13.5px}
+.details dt{color:var(--subtle);font-weight:600;font-size:12.5px}
+.details dd{margin:0;min-width:0;overflow-wrap:anywhere;display:flex;align-items:center;gap:7px;flex-wrap:wrap}
+.muted{color:var(--subtle)}
+.form{padding:0 20px;overflow-y:auto}
+.form label{display:block;font-size:12px;font-weight:600;color:var(--subtle);margin:14px 0 4px}
+.form .req{color:var(--bad)}
+.form input,.form select,.form textarea{width:100%;font:inherit;color:var(--text);background:var(--input);border:1px solid var(--input-border);border-radius:6px;padding:6px 9px;min-height:36px}
+.form input:focus,.form select:focus,.form textarea:focus{outline:2px solid var(--brand);outline-offset:-1px;border-color:transparent}
+.form .two{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.form .hint{font-size:12px;color:var(--subtle);margin-top:4px}
+.sheet-foot{display:flex;align-items:center;gap:8px;padding:16px 20px;border-top:1px solid var(--border)}
+/* recommendations, tabs, memory bank, editable fields */
+.rec-n{font-size:12px;color:var(--wait)}
+.recs{margin-top:14px;border-radius:10px;padding:10px 12px;background:color-mix(in srgb,var(--wait) 9%,transparent);border:1px solid color-mix(in srgb,var(--wait) 30%,transparent)}
+.recs-h{font-size:12px;font-weight:700;text-transform:uppercase;letter-spacing:.05em;color:var(--wait);margin-bottom:4px}
+.rec{padding:8px 0}
+.rec+.rec{border-top:1px solid var(--border)}
+.rec-t{color:var(--strong);font-weight:500}
+.rec-w{font-size:12px;color:var(--subtle);margin-top:2px}
+.rec-b{display:flex;gap:6px;margin-top:8px}
+.rec-b .btn{height:28px;font-size:13px}
+.mtabs{display:flex;gap:4px;border-bottom:1px solid var(--border);margin-top:18px}
+.mtab{background:none;border:0;border-bottom:2px solid transparent;padding:6px 10px 8px;color:var(--subtle);font-weight:500;margin-bottom:-1px}
+.mtab:hover{color:var(--text)}
+.mtab[aria-selected="true"]{color:var(--link);border-bottom-color:var(--link)}
+.mtab .n{font-size:11px;background:var(--hover);border-radius:8px;padding:0 6px;color:var(--text);margin-left:4px}
+.edit-ic{border:0;background:none;color:var(--subtle);padding:0 4px;font-size:13px}
+.edit-ic:hover{color:var(--link)}
+.inl{font:inherit;color:var(--text);background:var(--input);border:1px solid var(--input-border);border-radius:6px;padding:5px 8px;min-height:32px;width:100%}
+.inl:focus{outline:2px solid var(--brand);outline-offset:-1px;border-color:transparent}
+textarea.inl{resize:vertical}
+.memadd{display:flex;gap:8px;margin-top:4px}
+.mem,.kb{list-style:none;margin:10px 0 0;padding:0;display:flex;flex-direction:column;gap:8px}
+.mem li{display:flex;gap:10px;align-items:flex-start;background:var(--hover);border-radius:8px;padding:8px 10px}
+.mem li>div{flex:1}
+.mem small,.kb small{display:block;color:var(--subtle);font-size:12px;margin-top:2px}
+.mem .av{width:26px;height:26px;font-size:10px}
+.av.agent{background:#d97757}
+.kb li{border:1px solid var(--border);border-radius:8px;padding:9px 11px}
+.kb-h{display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin-bottom:3px}
+.kb-h b{color:var(--strong);font-weight:600}
+.canon{font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.04em;color:var(--ok);border:1px solid var(--ok);border-radius:4px;padding:0 4px}
+.details h3{display:flex;justify-content:space-between;align-items:baseline}
+.details dd .inl{flex:1;min-width:0}
+.details dd .btn.primary{height:32px}
+.ed{border:0;background:none;color:var(--text);padding:3px 6px;margin:-3px -6px;border-radius:6px;text-align:left;display:inline-flex;align-items:center;gap:7px;flex-wrap:wrap;min-height:28px}
+.ed:hover{background:var(--hover);box-shadow:inset 0 0 0 1px var(--border)}
+.edot{width:7px;height:7px;border-radius:50%;background:var(--link);display:inline-block}
+.addfield{display:flex;flex-direction:column;gap:8px;padding:0 14px 12px}
+.addfield .btn{align-self:flex-start}
+.toast{position:fixed;left:50%;bottom:24px;transform:translate(-50%,8px);background:var(--overlay);color:var(--strong);box-shadow:var(--float-drag);padding:11px 16px;border-radius:8px;font-size:14px;opacity:0;transition:opacity .2s,transform .2s;pointer-events:none;z-index:90;display:flex;gap:8px;align-items:center}
+.toast .dot{--d:var(--ok)}
+.toast.on{opacity:1;transform:translate(-50%,0)}
+/* case view: timeline */
+.tl{list-style:none;margin:4px 0 0;padding:0 0 0 4px;position:relative}
+.tl::before{content:"";position:absolute;left:68px;top:6px;bottom:6px;width:1px;background:var(--border)}
+.tl li{display:grid;grid-template-columns:58px 1fr;gap:20px;padding:5px 0;position:relative}
+.tl li::before{content:"";position:absolute;left:61px;top:11px;width:7px;height:7px;border-radius:50%;background:var(--subtlest);box-shadow:0 0 0 3px var(--overlay)}
+.tl-d{font-size:12px;color:var(--subtle);text-align:right;padding-top:1px;white-space:nowrap}
+.tl small{display:block;color:var(--subtle);font-size:11.5px;margin-top:1px}
+/* case view: Details sidebar spacing */
+.sheet-body{grid-template-columns:minmax(0,1fr) 372px}
+.details h3{padding:12px 16px}
+.details dl{grid-template-columns:128px minmax(0,1fr);gap:0 14px;padding:4px 16px 8px;font-size:13px}
+.details dl>dt,.details dl>dd{min-height:38px;padding:7px 0;border-bottom:1px solid color-mix(in srgb,var(--border) 55%,transparent)}
+.details dl>dt:last-of-type,.details dl>dd:last-of-type{border-bottom:0}
+.details dt{font-size:12.5px;line-height:16px;font-weight:500}
+.details dd{line-height:18px;overflow-wrap:normal;word-break:normal;align-content:center}
+.details dd .ed{margin:-4px -6px;padding:4px 6px;max-width:100%;line-height:18px}
+.details dd [data-field="company_id"]{font:12px/18px ui-monospace,Consolas,monospace;letter-spacing:-.01em}
+.details dd.muted{overflow-wrap:anywhere}
+.details .addfield{padding:4px 16px 12px}
+.details>p.muted{padding:0 16px 14px!important}
+@media (max-width:980px){.sheet-body{grid-template-columns:1fr}}
+/* today strip */
+.today{display:flex;gap:12px;align-items:stretch;margin-bottom:14px;overflow-x:auto;padding:2px 2px 6px}
+.today-h{display:flex;flex-direction:column;justify-content:center;gap:2px;padding:0 6px 0 2px;flex:none}
+.today-h b{color:var(--strong);font-size:15px}
+.today-h span{font-size:12px;color:var(--subtle)}
+.tg{background:var(--rail);border-radius:10px;box-shadow:var(--float);padding:10px;min-width:220px;flex:1 1 0;max-width:380px}
+.tg-h{display:flex;align-items:center;gap:7px;font-size:11.5px;font-weight:600;text-transform:uppercase;letter-spacing:.05em;color:var(--subtle);margin:0 0 4px 6px}
+.tg-h .dot{--d:var(--tc)}
+.tg-h .n{font-size:11px;background:var(--hover);border-radius:8px;padding:0 6px;color:var(--text)}
+.tc{display:block;width:100%;text-align:left;border:0;background:none;border-radius:6px;padding:5px 6px;color:var(--text)}
+.tc:hover{background:var(--hover)}
+.tc b{display:block;font-weight:500;font-size:13px;color:var(--strong)}
+.tc small{display:block;font-size:12px;color:var(--subtle);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.today .none{align-self:center}
+/* ctrl+k search */
+kbd{font:11px ui-monospace,Consolas,monospace;border:1px solid var(--border);border-radius:4px;padding:1px 5px;color:var(--subtle);background:var(--hover)}
+.kpal{width:min(680px,100%)}
+.kin{display:flex;align-items:center;gap:10px;padding:14px 16px;border-bottom:1px solid var(--border);color:var(--subtle)}
+.kin input{flex:1;border:0;background:none;font:inherit;font-size:16px;color:var(--text);outline:none}
+.kres{overflow-y:auto;max-height:60vh;padding:6px}
+.kres h6{font-size:11px;text-transform:uppercase;letter-spacing:.05em;color:var(--subtle);margin:10px 10px 4px;font-weight:600}
+.kr{display:flex;gap:10px;align-items:flex-start;width:100%;text-align:left;border:0;background:none;border-radius:8px;padding:8px 10px;color:var(--text)}
+.kr svg{margin-top:2px}
+.kr.on{background:var(--selected)}
+.kr b{display:block;color:var(--strong);font-weight:500}
+.kr small{display:block;color:var(--subtle);font-size:12px;line-height:16px}
+.kr mark{background:color-mix(in srgb,var(--wait) 30%,transparent);color:inherit;border-radius:2px}
+.hub .kb li.sup{opacity:.55}
+.hub .kb a{color:var(--link)}
+.old{font-size:11px;color:var(--wait);font-weight:600}
+.kbnav .pg small{font-size:11px;font-weight:400}
+.khint{font-size:12px;color:var(--subtle);padding:8px 12px}
+/* wide views: wiki and map */
+.layout.wide{grid-template-columns:minmax(0,1fr)}
+.layout.wide>.rail,.layout.wide .toolbar{display:none}
+.panel{background:var(--rail);border-radius:12px;box-shadow:var(--float);padding:16px}
+.kbwrap{display:grid;grid-template-columns:250px minmax(0,1fr) 300px;gap:16px;align-items:start}
+.kbnav,.files{position:sticky;top:16px;max-height:calc(100vh - 32px);overflow:auto}
+.kbnav .search input{width:100%}
+.kbnav h5{display:flex;justify-content:space-between;font-size:11.5px;text-transform:uppercase;letter-spacing:.06em;color:var(--subtle);margin:16px 0 6px;font-weight:600}
+.kbnav h5 span{font-weight:500}
+.pg{display:block;width:100%;text-align:left;border:0;background:none;padding:5px 8px;border-radius:6px;color:var(--text);font-size:13px;line-height:18px}
+.pg:hover{background:var(--hover)}
+.pg.cur{background:var(--selected);color:var(--link);font-weight:600}
+.md-wrap{min-height:60vh;padding:20px 28px}
+.md{line-height:1.6;overflow-wrap:anywhere}
+.md h2{font-size:22px;line-height:28px;color:var(--strong);margin:4px 0 12px}
+.md h3{font-size:17px;color:var(--strong);margin:22px 0 8px}
+.md h4,.md h5{font-size:14px;color:var(--strong);margin:16px 0 6px}
+.md p{margin:0 0 10px}
+.md ul,.md ol{margin:0 0 12px;padding-left:20px}
+.md li{margin:4px 0}
+.md li.sub{margin-left:18px;list-style:circle}
+.md code{font:12.5px ui-monospace,Consolas,monospace;background:var(--hover);padding:1px 5px;border-radius:4px}
+.md pre{font:12.5px/1.5 ui-monospace,Consolas,monospace;background:var(--hover);padding:10px 12px;border-radius:8px;overflow:auto;white-space:pre-wrap}
+.md blockquote{margin:0 0 10px;padding:4px 12px;border-left:3px solid var(--border);color:var(--subtle)}
+.md .tbl{overflow-x:auto;margin:0 0 12px}
+.md table{border-collapse:collapse;font-size:13px}
+.md th,.md td{border:1px solid var(--border);padding:6px 9px;text-align:left;vertical-align:top}
+.md th{background:var(--hover);color:var(--strong)}
+.usedby{display:flex;gap:6px;flex-wrap:wrap;align-items:center;font-size:12px;color:var(--subtle);margin:6px 0 14px}
+.chip{border:0;border-radius:6px;background:var(--hover);color:var(--text);font-size:12px;padding:3px 8px;cursor:pointer}
+.chip:hover{background:var(--selected);color:var(--link)}
+.files h4{margin:0 0 4px;font-size:14px;color:var(--strong)}
+.small{font-size:12px;line-height:16px}
+.lbl{display:block;font-size:12px;font-weight:600;color:var(--subtle);margin:12px 0 4px}
+.drop{margin-top:12px;border:2px dashed var(--border);border-radius:10px;padding:18px 12px;text-align:center;color:var(--subtle);font-size:13px;transition:all .15s}
+.drop.over{border-color:var(--brand);background:var(--selected);color:var(--link)}
+.drop .btn{margin-top:6px}
+.flist{list-style:none;margin:14px 0 0;padding:0;display:flex;flex-direction:column;gap:6px}
+.flist li{display:flex;flex-wrap:wrap;align-items:center;gap:2px 8px;padding:7px 8px;border-radius:8px;background:var(--hover)}
+.flist .fname{flex:1;min-width:0;border:0;background:none;padding:0;text-align:left;color:var(--link);font-size:13px;overflow-wrap:anywhere}
+.flist small{flex-basis:100%;order:3;color:var(--subtle);font-size:11.5px}
+.flist .btn.icon{width:24px;height:24px}
+.connect-card{max-width:560px;margin:40px auto;text-align:center}
+.connect-card h3{margin:0 0 8px;color:var(--strong)}
+.connect-card p{margin:0 0 16px}
+/* map */
+.mapbox{overflow-x:auto}
+svg.map{display:block;width:100%;min-width:980px;height:auto}
+svg.map .ch{font-size:11px;font-weight:600;letter-spacing:.06em;text-transform:uppercase;fill:var(--subtle)}
+svg.map .node{cursor:pointer;transition:opacity .15s}
+svg.map .node rect.nr{fill:var(--card);stroke:var(--border);stroke-width:1}
+svg.map .node:hover rect.nr,svg.map .node.hi rect.nr{stroke:var(--link);stroke-width:1.5}
+svg.map .node.gap rect.nr{stroke:var(--wait);stroke-dasharray:4 3}
+svg.map .nl{font-size:12.5px;font-weight:600;fill:var(--strong)}
+svg.map .ns{font-size:11px;fill:var(--subtle)}
+svg.map .nb rect{fill:var(--wait)}
+svg.map .nb text{font-size:10.5px;font-weight:700;fill:var(--brand-text)}
+svg.map .edge{fill:none;stroke:var(--subtlest);stroke-width:1.3;opacity:.6;transition:opacity .15s}
+svg.map .edge.manual{stroke-dasharray:5 4}
+svg.map .edge.write{stroke:var(--c-client)}
+svg.map .ah{fill:var(--subtlest)}
+svg.map.focus .edge{opacity:.07}
+svg.map.focus .edge.hi{opacity:1;stroke-width:2.2}
+svg.map.focus .node{opacity:.28}
+svg.map.focus .node.hi{opacity:1}
+.mapgrid{display:grid;grid-template-columns:minmax(0,1fr) 340px;gap:16px;margin-top:16px;align-items:start}
+.mapgrid h4{margin:0 0 8px;font-size:14px;color:var(--strong)}
+.legend{display:flex;gap:18px;flex-wrap:wrap;font-size:12px;color:var(--subtle);margin-top:10px}
+.legend i{display:inline-block;width:26px;height:0;border-top:2px solid var(--subtlest);vertical-align:middle;margin-right:6px}
+.legend i.m{border-top-style:dashed}
+.legend i.w{border-top-color:var(--c-client)}
+.legend i.g{width:14px;height:10px;border:1.5px dashed var(--wait);border-radius:3px}
+.cov .row{display:grid;grid-template-columns:110px 1fr 44px;gap:8px;align-items:center;font-size:13px;padding:4px 0}
+.cov .row b{text-align:right;color:var(--strong);font-variant-numeric:tabular-nums}
+.cov .bar{height:6px;border-radius:3px;background:var(--hover);overflow:hidden}
+.cov .bar span{display:block;height:100%;background:var(--wait);border-radius:3px}
+.minfo dl{display:grid;grid-template-columns:70px 1fr;gap:6px 10px;margin:10px 0 0;font-size:13px}
+.minfo dt{color:var(--subtle);font-weight:600}
+.minfo dd{margin:0}
+@media (max-width:1100px){.kbwrap,.mapgrid{grid-template-columns:minmax(0,1fr)}.kbnav,.files{position:static;max-height:none}}
+@media (max-width:1280px){.layout{grid-template-columns:minmax(0,1fr)}.rail{position:static}.rails-row{display:grid;grid-template-columns:1fr 1fr;gap:16px}}
+@media (max-width:760px){.sheet-body{grid-template-columns:1fr}.form .two{grid-template-columns:1fr}.jrow{grid-template-columns:1fr;gap:2px}.jrow .err{grid-column:1}.jname{flex-direction:column;align-items:stretch;gap:0}.jname .sep{display:none}.rails-row{grid-template-columns:1fr}.page{padding:14px}}
+</style>
+</head>
+<body>
+<div class="topbar">
+  <div class="logo"><i>S</i>Support</div>
+  <div class="grow"></div>
+  <div class="save" id="save"><span class="dot"></span><span id="saveText"></span><button class="btn" id="connectBtn" hidden></button></div>
+  <button class="btn subtle" id="kBtn" title="Search cases, tickets and the wiki">Search <kbd>Ctrl K</kbd></button>
+  <button class="btn primary" id="createBtn">+ Create</button>
+</div>
+
+<div class="page">
+  <div class="head">
+    <div>
+      <div class="crumbs">Spaces<span>/</span>Support<span>/</span></div>
+      <h1>Case Board</h1>
+    </div>
+    <div class="grow"></div>
+    <div class="tabs" role="tablist" id="tabs"></div>
+    <button class="btn subtle icon" id="boardMenuBtn" aria-label="Board actions">⋯</button>
+  </div>
+
+  <div class="layout" id="layout">
+    <aside class="rail" id="leftRail"></aside>
+    <section>
+      <div class="toolbar">
+        <div class="search"><svg width="14" height="14" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.6"><circle cx="7" cy="7" r="5"/><path d="M11 11l3.5 3.5"/></svg><input id="q" placeholder="Search cases" aria-label="Search cases"></div>
+        <div class="avatars" id="regionAv"></div>
+        <button class="btn caret" data-filter="verdict">Verdict</button>
+        <button class="btn caret" data-filter="signal">Check-up</button>
+        <button class="btn caret" data-filter="kind">Type</button>
+        <button class="btn subtle" id="clearF" hidden>Clear filters</button>
+      </div>
+      <div id="today"></div>
+      <div id="view"></div>
+    </section>
+    <aside class="rail" id="rightRail"></aside>
+  </div>
+</div>
+
+<div class="modal" id="caseModal"><div class="sheet" role="dialog" aria-modal="true" aria-labelledby="cTitle">
+  <div class="sheet-head"><span id="cCrumb"></span><span class="grow"></span><button class="btn subtle icon" data-close aria-label="Close">✕</button></div>
+  <div class="sheet-body" id="cBody"></div>
+</div></div>
+
+<div class="modal" id="createModal"><form class="sheet small" id="createForm" role="dialog" aria-modal="true" aria-labelledby="crTitle" novalidate>
+  <div class="sheet-head"><span class="jtype" id="crTitle"><span id="crIcon"></span>Support<i></i>Create case</span><span class="grow"></span><button type="button" class="btn subtle icon" data-close aria-label="Close">✕</button></div>
+  <div class="form" style="padding-bottom:18px">
+    <div class="jname">
+      <input class="jsum" id="fClient" required placeholder="Client *" aria-label="Client" autocomplete="off">
+      <span class="sep" aria-hidden="true">&lt;&gt;</span>
+      <input class="jsum" id="fInt" required placeholder="Integration or topic *" aria-label="Integration or topic" autocomplete="off">
+    </div>
+    <div class="hint" id="fNameHint">Named "Client &lt;&gt; Integration", like your chats.</div>
+    <textarea class="jdesc" id="fNote" placeholder="Add a description: what the client reported, in their words" aria-label="Description"></textarea>
+    <div id="fRows"></div>
+  </div>
+  <div class="sheet-foot"><span class="grow"></span><label style="display:flex;gap:6px;align-items:center;font-size:13px"><input type="checkbox" id="fAnother"> Create another</label>
+    <button type="button" class="btn subtle" data-close>Cancel</button><button class="btn primary">Create</button></div>
+</form></div>
+
+<div class="modal" id="kModal"><div class="sheet kpal" role="dialog" aria-modal="true" aria-label="Search everything">
+  <div class="kin"><svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.6"><circle cx="7" cy="7" r="5"/><path d="M11 11l3.5 3.5"/></svg><input id="kq" placeholder="Search cases, tickets, contacts and the wiki" autocomplete="off" aria-label="Search everything"><kbd>Esc</kbd></div>
+  <div class="kres" id="kres"></div>
+</div></div>
+
+<div class="pop" id="pop" role="menu"></div>
+<div class="toast" id="toast"><span class="dot"></span><span id="toastText"></span></div>
+
+<script src="case-board-data.js"></script>
+<script src="board-edits.js"></script>
+<script src="kb-index.js"></script>
+<script src="kb-facts.js"></script>
+<script src="demo-wiki.js"></script>
+<script>
+const DATA = window.BOARD_DATA || {updated:"", cases:[], tasks:[], details:{}, checkup:null};
+const CHECKUP = DATA.checkup || null;
+const COLORS = ["open","client","eng","closed","teal","rose","amber","slate"];
+const CVAR = {open:"var(--c-open)", client:"var(--c-client)", eng:"var(--c-eng)", closed:"var(--c-closed)", teal:"#2bb3a3", rose:"#d86a9a", amber:"#d69a2d", slate:"#8590a2",
+  blue:"var(--c-open)", yellow:"var(--c-client)", purple:"var(--c-eng)", green:"var(--c-closed)", grey:"#8590a2", red:"#d6594f", magenta:"#d86a9a"};
+const cc = c => CVAR[c] || CVAR.slate;
+const STATUS_LABEL = {"open":"Open","waiting-on-client":"Waiting on client","waiting-on-engineering":"Waiting on engineering","closed":"Closed"};
+const DEFAULT_COLS = [
+  {id:"open", label:"Open", status:"open", color:"open"},
+  {id:"waiting-on-client", label:"Waiting on client", status:"waiting-on-client", color:"client"},
+  {id:"waiting-on-engineering", label:"Waiting on engineering", status:"waiting-on-engineering", color:"eng"},
+  {id:"closed", label:"Closed", status:"closed", color:"closed"}
+];
+const VERDICT = {"client-action":"Client action","expected-behaviour":"Expected behaviour","known-bug":"Known bug","new-bug":"New bug","needs-engineer":"Needs engineer"};
+const VCOL = {"client-action":"var(--v-client)","expected-behaviour":"var(--v-expected)","known-bug":"var(--v-known)","new-bug":"var(--v-new)","needs-engineer":"var(--v-eng)"};
+const SIG = {solved:"Looks solved", waiting:"Still waiting", quiet:"Gone quiet", couldnt:"Couldn't check"};
+const SCOL = {solved:"var(--ok)", waiting:"var(--wait)", quiet:"var(--bad)", couldnt:"var(--muted-dot)"};
+const esc = s => String(s ?? "").replace(/[&<>"]/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
+const day = d => new Date(d + "T00:00:00");
+const days = d => Math.max(0, Math.floor((Date.now() - day(d)) / 864e5));
+const fmt = d => d ? day(d).toLocaleDateString("en-GB", {day:"numeric", month:"short"}) : "";
+const today = () => new Date().toISOString().slice(0, 10);
+const avatar = r => `<span class="av ${r === "EU" ? "eu" : r === "US" ? "us" : "unk"}" title="Region: ${esc(r || "unknown")}">${esc(r || "?")}</span>`;
+const ICON = {
+  bug:`<svg width="16" height="16" viewBox="0 0 16 16"><rect width="16" height="16" rx="4" fill="#e5534b"/><circle cx="8" cy="8" r="3" fill="#fff"/></svg>`,
+  task:`<svg width="16" height="16" viewBox="0 0 16 16"><rect width="16" height="16" rx="4" fill="#4c9aff"/><path d="M4.5 8.2l2.3 2.3 4.7-4.9" stroke="#fff" stroke-width="1.8" fill="none"/></svg>`,
+  case:`<svg width="16" height="16" viewBox="0 0 16 16"><rect width="16" height="16" rx="4" fill="#8777d9"/><rect x="4" y="4.5" width="8" height="7" rx="1.2" stroke="#fff" stroke-width="1.5" fill="none"/></svg>`,
+  kebab:`<svg width="16" height="16" viewBox="0 0 16 16" fill="currentColor"><circle cx="3" cy="8" r="1.5"/><circle cx="8" cy="8" r="1.5"/><circle cx="13" cy="8" r="1.5"/></svg>`,
+  check:`<svg width="14" height="14" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M3 8.5l3.2 3L13 4.5"/></svg>`,
+  link:`<svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M6.5 9.5l3-3M7 4.5l1-1a2.8 2.8 0 014 4l-1 1M9 11.5l-1 1a2.8 2.8 0 01-4-4l1-1"/></svg>`
+};
+
+/* ---------- edits ---------- */
+const LS = "case-board-edits-v2";
+const blank = () => ({v:4, saved_at:"", where:{}, added:[], columns:null, order:{}, notes:{}, fields:{}, memory:{}, dismissed:{}});
+/* Editable fields. file:true ones the agent writes into the case file's front-matter; the rest are board-only. */
+const SVG = d => `<svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round">${d}</svg>`;
+const FICON = {
+  status: SVG('<circle cx="8" cy="8" r="5.5" stroke-dasharray="2.2 1.6"/>'),
+  verdict: SVG('<path d="M3 8.5l3 3 7-7"/>'),
+  region: SVG('<circle cx="8" cy="8" r="5.5"/><path d="M2.5 8h11M8 2.5c1.8 2 1.8 9 0 11M8 2.5c-1.8 2-1.8 9 0 11"/>'),
+  company_id: SVG('<rect x="3" y="2.5" width="10" height="11" rx="1"/><path d="M6 5.5h1M9 5.5h1M6 8h1M9 8h1M7 13.5v-2.5h2v2.5"/>'),
+  monitor: SVG('<rect x="2" y="3" width="12" height="8" rx="1"/><path d="M6 13.5h4M4.5 8.5l2-2 1.5 1.5 3-3"/>'),
+  tickets: SVG('<path d="M3 5.5a1.5 1.5 0 0 0 0-3h10a1.5 1.5 0 0 0 0 3v5a1.5 1.5 0 0 0 0 3H3a1.5 1.5 0 0 0 0-3z"/>'),
+  priority: SVG('<path d="M3 6h10M3 10h10"/>'),
+  severity: SVG('<path d="M8 2.5l6 10.5H2z"/><path d="M8 6.5v3M8 11.3v.1"/>'),
+  engagement: SVG('<path d="M2.5 8h8M8 4.5l3.5 3.5L8 11.5M13.5 3v10"/>'),
+  channel: SVG('<path d="M2.5 4h11v7h-6l-3 2.5V11h-2z"/>'),
+  labels: SVG('<path d="M2.5 2.5h5l6 6-5 5-6-6z"/><circle cx="5.3" cy="5.3" r=".8"/>'),
+  follow_up: SVG('<rect x="2.5" y="3.5" width="11" height="10" rx="1"/><path d="M2.5 6.5h11M5.5 2v3M10.5 2v3"/>'),
+  contact: SVG('<circle cx="8" cy="5.5" r="2.5"/><path d="M3 13.5c.8-2.5 2.8-3.5 5-3.5s4.2 1 5 3.5"/>'),
+  source: SVG('<path d="M6.5 9.5l3-3M7 4.5l1.2-1.2a2.5 2.5 0 0 1 3.5 3.5L10.5 8M5.5 8l-1.2 1.2a2.5 2.5 0 0 0 3.5 3.5L9 11.5"/>'),
+  reporter: SVG('<circle cx="8" cy="8" r="5.5"/><circle cx="8" cy="6.8" r="1.8"/><path d="M4.8 12c.7-1.4 1.8-2 3.2-2s2.5.6 3.2 2"/>'),
+  opened: SVG('<circle cx="8" cy="8" r="5.5"/><path d="M8 5v3.2l2 1.3"/>'),
+  file: SVG('<path d="M4 2.5h5l3 3v8H4z"/><path d="M9 2.5v3h3"/>'),
+  custom: SVG('<path d="M4 4h8M4 8h8M4 12h5"/>')
+};
+const SEVCOL = {s1:"var(--bad)", s2:"#e2773a", s3:"var(--wait)", s4:"var(--muted-dot)"};
+const FIELDS = [
+  {k:"verdict", label:"Verdict", type:"select", file:true, opts:[["","Not decided"],...Object.entries({"client-action":"Client action","expected-behaviour":"Expected behaviour","known-bug":"Known bug","new-bug":"New bug","needs-engineer":"Needs engineer"})]},
+  {k:"region", label:"Region", type:"select", file:true, opts:[["","Unknown"],["EU","EU"],["US","US"]]},
+  {k:"company_id", label:"Company ID", type:"text", file:true, ph:"24-character ID", check:v => !v || /^[0-9a-f]{24}$/.test(v) || "A company ID is 24 characters, 0-9 and a-f"},
+  {k:"monitor", label:"Monitor", type:"text", file:true, ph:"MON-12"},
+  {k:"tickets", label:"Jira", type:"text", file:true, ph:"SUP-123, SUP-456", check:v => !v || v.split(/[\s,]+/).filter(Boolean).every(t => /^[A-Z][A-Z0-9]+-\d+$/i.test(t)) || "Use keys like SUP-123"},
+  {k:"priority", label:"Priority", type:"select", opts:[["","None"],["low","Low"],["medium","Medium"],["high","High"],["highest","Highest"]]},
+  {k:"severity", label:"Severity", type:"select", opts:[["","None"],["s1","S1: Critical, client blocked"],["s2","S2: Major, audit at risk"],["s3","S3: Moderate, workaround exists"],["s4","S4: Minor, cosmetic or question"]]},
+  {k:"engagement", label:"Engagement", type:"select", opts:[["","Not set"],["reactive","Reactive: client raised it"],["proactive","Proactive: we found it"]]},
+  {k:"channel", label:"Channel", type:"select", opts:[["","Not set"],["intercom","Intercom"],["slack","Slack"],["email","Email"],["call","Call or meeting"],["internal","Internal (#support)"]]},
+  {k:"labels", label:"Labels", type:"text", ph:"audit, tier-1, repeat", norm:v => [...new Set(String(v || "").split(/[,\s]+/).map(s => s.trim().toLowerCase()).filter(Boolean))].join(", ")},
+  {k:"follow_up", label:"Follow up on", type:"date"},
+  {k:"contact", label:"Client contact", type:"text", ph:"Name, as in the ticket"}
+];
+const labelsOf = c => String(c.labels || "").split(/,\s*/).filter(Boolean);
+const optText = (k, v) => FIELDS.find(f => f.k === k)?.opts?.find(o => o[0] === v)?.[1] || v;
+function fromLocal(){
+  try {
+    const v2 = JSON.parse(localStorage.getItem(LS)); if (v2) return v2;
+    const v1 = JSON.parse(localStorage.getItem("case-tracker-edits-v1"));
+    if (v1) { const e = blank(); for (const [n, m] of Object.entries(v1.moves || {})) e.where[n] = m.to;
+      for (const a of v1.added || []) { e.where[a.case] = a.status; const {status, ...rest} = a; e.added.push(rest); } return e; }
+  } catch {}
+  return null;
+}
+let edits = [window.BOARD_EDITS, fromLocal()].filter(Boolean).sort((a, b) => (b.saved_at || "").localeCompare(a.saved_at || ""))[0] || blank();
+edits = {...blank(), ...edits, v:3};
+const cols = () => edits.columns || DEFAULT_COLS;
+const colById = id => cols().find(c => c.id === id);
+const closedCol = () => cols().find(c => c.status === "closed");
+const base = [...(DATA.cases || []).map(c => ({...c, kind:"case"})), ...(DATA.tasks || []).map(t => ({...t, kind:"task"}))];
+const byName = n => base.find(c => c.case === n);
+const homeCol = c => cols().find(x => x.status === c.status) || cols()[0];
+const colOf = c => { const id = edits.where[c.case]; return (id && colById(id)) || homeCol(c); };
+function reconcile(){
+  edits.added = edits.added.filter(a => !byName(a.case));
+  for (const [n, id] of Object.entries(edits.where)) {
+    const col = colById(id), b = byName(n), isAdded = edits.added.some(a => a.case === n);
+    if (!col || (!b && !isAdded)) { delete edits.where[n]; continue; }
+    if (b && col.status && b.status === col.status && homeCol(b).id === id) delete edits.where[n];
+  }
+  /* Field edits the agent has written into the case file disappear here. */
+  for (const [n, f] of Object.entries(edits.fields)) {
+    const b = byName(n); if (!b && !edits.added.some(a => a.case === n)) { delete edits.fields[n]; continue; }
+    if (b) for (const fd of FIELDS.filter(x => x.file)) if (fd.k in f && same(fd.k, f[fd.k], b[fd.k])) delete f[fd.k];
+    if ("next" in f && (DATA.details || {})[n]?.next === f.next) delete f.next;
+    if (!Object.keys(f).filter(k => k !== "custom").length && !Object.keys(f.custom || {}).length) delete edits.fields[n];
+  }
+}
+const norm = (k, v) => k === "tickets" ? (Array.isArray(v) ? v : String(v || "").split(/[\s,]+/)).filter(Boolean).map(s => s.toUpperCase()).sort().join(",") : String(v ?? "");
+const same = (k, a, b) => norm(k, a) === norm(k, b);
+function items(){
+  return [...base, ...edits.added.map(a => ({...a, kind:"task", pending:true}))].map(c => {
+    const col = colOf(c), w = edits.where[c.case], f = edits.fields[c.case] || {};
+    const merged = {...c};
+    for (const fd of FIELDS) if (fd.k in f) merged[fd.k] = fd.k === "tickets" ? norm("tickets", f.tickets).split(",").filter(Boolean) : f[fd.k];
+    const fileEdits = FIELDS.filter(fd => fd.file && fd.k in f && !c.pending && !same(fd.k, f[fd.k], c[fd.k])).map(fd => fd.k);
+    return {...merged, custom: f.custom || {}, orig: c, fileEdits, col, isClosed: col.status === "closed", moved: !!w && !c.pending && !!col.status && col.status !== c.status};
+  });
+}
+function recsFor(c){
+  const out = [], s = sigOf(c), d = c.opened ? days(c.opened) : 0;
+  const add = (id, text, why, act) => { if (!edits.dismissed[c.case + "|" + id]) out.push({id, text, why, act}); };
+  if (c.isClosed && c.moved) add("closeout", "Close this out with /close-out: I'll ask you what fixed it.", "You moved it to Closed", {note:"Recommendation accepted: run /close-out on this case"});
+  if (s?.signal === "solved" && !c.isClosed) add("solved", "The client confirmed the fix. Close this out.", s.note, {move:closedCol()?.id, note:"Recommendation accepted: the client confirmed, run /close-out"});
+  if (s?.signal === "quiet") add("nudge", "Nothing new for days. Draft a short nudge.", s.note, {note:"Recommendation accepted: draft a short nudge in my style for whoever we're waiting on"});
+  const fu = c.follow_up; if (fu && fu <= today() && !c.isClosed) add("followup", `Follow-up was due ${fmt(fu)}.`, "Follow up date you set", {note:"Recommendation accepted: check this case for the follow-up I set"});
+  if (!c.isClosed && !c.verdict) add("verdict", "No verdict yet. Investigate it, Datadog first.", "Verdict is empty", {note:"Recommendation accepted: investigate this case, give me the Bits prompt first"});
+  if (!c.isClosed && ["new-bug","needs-engineer"].includes(c.verdict) && !(c.tickets || []).length && d >= 2) add("bug", "Needs engineering but has no Jira ticket. Draft the bug.", `${d} days open, no ticket`, {note:"Recommendation accepted: draft the bug preview for this case"});
+  if (!c.isClosed && c.kind === "case" && !c.company_id) add("cid", "Company ID is missing. Look it up in the admin sheet.", "Needed for bugs and Datadog", {note:"Recommendation accepted: find this client's company ID"});
+  for (const r of (DATA.recs || {})[c.case] || []) add("c:" + r.id, r.text, r.why, {note:"Recommendation accepted"});
+  return out.map((r, i) => ({...r, source: ((DATA.recs || {})[c.case] || []).find(x => "c:" + x.id === r.id)?.source}));
+}
+const knowledgeFor = c => (c.kb || []).map(p => ({page:p, ...((DATA.knowledge || {})[p] || {items:[]})}));
+const sigOf = c => !c.isClosed && c.status !== "closed" && CHECKUP?.signals ? CHECKUP.signals[c.case] : null;
+const detailsOf = c => (DATA.details || {})[c.case] || {};
+const newNotes = () => Object.entries(edits.notes).flatMap(([n, l]) => l.filter(x => !DATA.notes_seen || x.at > DATA.notes_seen).map(x => ({...x, case:n})));
+
+/* ---------- filters ---------- */
+const FKEY = "case-board-filters-v2";
+let F = {q:"", region:[], verdict:[], signal:[], kind:[], view:"board", sort:"opened", dir:1};
+try { F = {...F, ...JSON.parse(localStorage.getItem(FKEY) || "{}"), q:""}; } catch {}
+const saveF = () => { try { localStorage.setItem(FKEY, JSON.stringify({...F, q:""})); } catch {} };
+const FOPTS = {
+  verdict: [...Object.entries(VERDICT), ["none","Not decided"]],
+  signal: [...Object.entries(SIG), ["none","No check-up"]],
+  kind: [["case","Case"],["task","Task"]]
+};
+const fval = (k, c) => k === "verdict" ? (c.verdict || "none") : k === "signal" ? (sigOf(c)?.signal || "none") : c.kind;
+function pass(c){
+  const d = detailsOf(c);
+  if (F.q) { const hay = [c.case, ...(c.tickets || []), VERDICT[c.verdict], c.note, d.summary, d.cause, d.next].join(" ").toLowerCase();
+    if (!F.q.toLowerCase().split(/\s+/).every(w => hay.includes(w))) return false; }
+  if (F.region.length && !F.region.includes(c.region || "?")) return false;
+  for (const k of ["verdict","signal","kind"]) if (F[k].length && !F[k].includes(fval(k, c))) return false;
+  return true;
+}
+const anyFilter = () => F.q || F.region.length || F.verdict.length || F.signal.length || F.kind.length;
+
+/* ---------- saving ---------- */
+let dirHandle = null, folderOk = false, saveTimer = null, lastWrite = null;
+const idb = (mode, fn) => new Promise((res, rej) => { const r = indexedDB.open("case-board", 1);
+  r.onupgradeneeded = () => r.result.createObjectStore("kv");
+  r.onsuccess = () => { const q = fn(r.result.transaction("kv", mode).objectStore("kv")); q.onsuccess = () => res(q.result); q.onerror = () => rej(q.error); };
+  r.onerror = () => rej(r.error); });
+const idbGet = k => idb("readonly", s => s.get(k)).catch(() => null);
+const idbSet = (k, v) => idb("readwrite", s => s.put(v, k)).catch(() => null);
+function save(){
+  edits.saved_at = new Date().toISOString();
+  try { localStorage.setItem(LS, JSON.stringify(edits)); } catch {}
+  clearTimeout(saveTimer); saveTimer = setTimeout(writeFolder, 250);
+}
+async function writeFolder(){
+  if (!dirHandle || !folderOk) return showSave();
+  try {
+    const w = await (await dirHandle.getFileHandle("board-edits.js", {create:true})).createWritable();
+    await w.write("/* Case board edits. Written by index.html; read by the agent. */\nwindow.BOARD_EDITS = " + JSON.stringify(edits, null, 1) + ";\n");
+    await w.close(); lastWrite = new Date();
+  } catch { folderOk = false; }
+  showSave();
+}
+function showSave(){
+  const box = document.getElementById("save"), t = document.getElementById("saveText"), b = document.getElementById("connectBtn");
+  box.className = "save"; b.hidden = true;
+  if (!("showDirectoryPicker" in window)) { box.classList.add("warn"); t.textContent = "Browser only: open in Chrome or Edge"; return; }
+  if (folderOk) { box.classList.add("ok"); t.textContent = lastWrite ? "Saved for the agent " + lastWrite.toLocaleTimeString("en-GB", {hour:"2-digit", minute:"2-digit"}) : "The agent sees your changes"; return; }
+  box.classList.add("warn"); b.hidden = false;
+  t.textContent = dirHandle ? "Saving paused" : "The agent can't see changes yet";
+  b.textContent = dirHandle ? "Resume" : "Connect folder";
+}
+document.getElementById("connectBtn").onclick = async () => {
+  try {
+    if (dirHandle) folderOk = (await dirHandle.requestPermission({mode:"readwrite"})) === "granted";
+    else {
+      const h = await window.showDirectoryPicker({id:"case-board", mode:"readwrite"});
+      try { await h.getFileHandle("index.html"); } catch { toast("Pick the case-board folder on your Desktop (the folder that holds index.html)"); return; }
+      dirHandle = h; folderOk = true; await idbSet("dir", h);
+    }
+    if (folderOk) { await writeFolder(); toast("Connected. The agent now sees your changes"); }
+  } catch {}
+  showSave(); render();
+};
+(async () => {
+  if (!("showDirectoryPicker" in window)) return showSave();
+  const h = await idbGet("dir");
+  if (h) { dirHandle = h; try { folderOk = (await h.queryPermission({mode:"readwrite"})) === "granted"; } catch {} }
+  showSave(); if (folderOk) writeFolder(); render();
+})();
+
+/* ---------- render ---------- */
+function render(){
+  const all = items();
+  const nClosed = all.filter(c => c.isClosed).length;
+  document.getElementById("tabs").innerHTML = [["board","Board"],["list","List"],["closed","Closed", nClosed],["wiki","Wiki"],["map","Map"]]
+    .map(([v, t, n]) => `<button class="tab" role="tab" data-view="${v}" aria-selected="${F.view === v}">${t}${n !== undefined ? ` <span class="n">${n}</span>` : ""}</button>`).join("");
+  document.getElementById("regionAv").innerHTML = ["EU","US","?"].filter(r => all.some(c => (c.region || "?") === r))
+    .map(r => `<button class="av ${r === "EU" ? "eu" : r === "US" ? "us" : "unk"}" data-region="${r}" aria-pressed="${F.region.includes(r)}" title="Region ${r === "?" ? "unknown" : r}">${r}</button>`).join("");
+  document.querySelectorAll("[data-filter]").forEach(b => b.classList.toggle("on", F[b.dataset.filter].length > 0));
+  document.getElementById("clearF").hidden = !anyFilter();
+  const wide = F.view === "wiki" || F.view === "map";
+  document.getElementById("layout").classList.toggle("wide", wide);
+  if (!wide) { leftRail(all); rightRail(all); }
+  renderToday(all);
+  if (F.view === "list") renderList(all); else if (F.view === "closed") renderClosed(all);
+  else if (F.view === "wiki") renderWiki(all); else if (F.view === "map") renderMap(); else renderBoard(all);
+}
+function leftRail(all){
+  const open = all.filter(c => !c.isClosed);
+  const ages = open.filter(c => c.opened).map(c => days(c.opened));
+  const avg = ages.length ? Math.round(ages.reduce((a, b) => a + b, 0) / ages.length) : 0;
+  const oldest = open.filter(c => c.opened).sort((a, b) => a.opened.localeCompare(b.opened))[0];
+  const weekAgo = new Date(Date.now() - 7 * 864e5).toISOString().slice(0, 10);
+  const closedWeek = all.filter(c => c.isClosed && (c.closed || today()) >= weekAgo).length;
+  const boardCols = cols().filter(c => c.status !== "closed");
+  const max = Math.max(1, ...boardCols.map(col => open.filter(c => c.col.id === col.id).length));
+  const verdicts = Object.keys(VERDICT).map(v => [v, open.filter(c => c.verdict === v).length]).filter(([, n]) => n);
+  document.getElementById("leftRail").innerHTML = `
+    <h3>Open cases</h3>
+    <div class="big">${open.length}<small>${closedWeek} closed this week</small></div>
+    <h3>By status</h3>
+    ${boardCols.map(col => { const n = open.filter(c => c.col.id === col.id).length;
+      return `<div class="stat"><span class="dot" style="--d:${cc(col.color)}"></span>${esc(col.label)}<b>${n}</b></div><div class="meter"><span style="--d:${cc(col.color)};width:${n / max * 100}%"></span></div>`; }).join("")}
+    <h3>Age</h3>
+    <div class="kv"><span>Average open</span><b>${avg} days</b></div>
+    <div class="kv"><span>Over 7 days</span><b>${ages.filter(a => a >= 7).length}</b></div>
+    ${oldest ? `<button class="att" data-open="${esc(oldest.case)}"><span class="dot" style="--d:var(--bad)"></span><span><b>${esc(oldest.case)}</b><small>Oldest, ${days(oldest.opened)} days open</small></span></button>` : ""}
+    <h3>By verdict</h3>
+    ${verdicts.map(([v, n]) => `<div class="stat"><span class="dot" style="--d:${VCOL[v]}"></span>${VERDICT[v]}<b>${n}</b></div>`).join("") || `<div class="none">No verdicts yet</div>`}`;
+}
+function rightRail(all){
+  const open = all.filter(c => !c.isClosed);
+  const solved = open.filter(c => sigOf(c)?.signal === "solved");
+  const quiet = open.filter(c => sigOf(c)?.signal === "quiet");
+  const pending = all.filter(c => c.pending || c.moved || c.fileEdits.length);
+  const notes = newNotes();
+  const att = (c, col, sub) => `<button class="att" data-open="${esc(c.case)}"><span class="dot" style="--d:${col}"></span><span><b>${esc(c.case)}</b><small>${esc(sub)}</small></span></button>`;
+  const onYou = open.filter(c => sigOf(c)?.on === "us");
+  document.getElementById("rightRail").innerHTML = `
+    ${onYou.length ? `<h3>On you</h3>${onYou.map(c => att(c, "var(--brand)", sigOf(c).note)).join("")}` : ""}
+    <h3>Ready to close</h3>
+    ${solved.map(c => att(c, "var(--ok)", sigOf(c).note)).join("") || `<div class="none">Nothing looks solved yet</div>`}
+    <h3>Gone quiet</h3>
+    ${quiet.map(c => att(c, "var(--bad)", sigOf(c).note)).join("") || `<div class="none">Nobody's waiting too long</div>`}
+    <h3>For the agent</h3>
+    <div class="kv"><span>Moves, edits, new cards</span><b>${pending.length}</b></div>
+    <div class="kv"><span>New memory notes</span><b>${Object.values(edits.memory).flat().filter(m => !DATA.notes_seen || m.at > DATA.notes_seen).length}</b></div>
+    <div class="kv"><span>New comments</span><b>${notes.length}</b></div>
+    <div class="kv"><span>Sync</span><b>${folderOk ? "Connected" : "Not connected"}</b></div>
+    <h3>Last check-up</h3>
+    <div class="kv"><span>Ran</span><b>${CHECKUP ? fmt(CHECKUP.date) : "Not yet"}</b></div>
+    <div class="kv"><span>Cases data</span><b>${fmt(DATA.updated) || "None"}</b></div>`;
+}
+function sortIn(col, list){
+  const ord = edits.order[col.id] || [];
+  return list.sort((a, b) => {
+    const ia = ord.indexOf(a.case), ib = ord.indexOf(b.case);
+    if (ia !== -1 || ib !== -1) return (ia === -1 ? 1e9 : ia) - (ib === -1 ? 1e9 : ib);
+    return (a.opened || "").localeCompare(b.opened || "");
+  });
+}
+function renderBoard(all){
+  const list = all.filter(pass), closed = closedCol();
+  document.getElementById("view").innerHTML = `<div class="board-wrap"><div class="board">${cols().filter(c => c.status !== "closed").map(col => {
+    const its = sortIn(col, list.filter(c => c.col.id === col.id));
+    return `<section class="col" data-col="${esc(col.id)}" style="--cc:${cc(col.color)}">
+      <div class="colhead"><span class="dot"></span><span class="name">${esc(col.label)}</span><span class="cnt">${its.length}</span><span class="grow"></span>
+        <button class="btn subtle icon" data-colmenu="${esc(col.id)}" aria-label="Column actions">${ICON.kebab}</button></div>
+      <div class="colbar"></div>
+      <div class="cards">${its.map(card).join("")}<div class="empty">${anyFilter() ? "No matches" : "Drop a case here"}</div></div>
+      <button class="create" data-add="${esc(col.id)}">+ Create</button>
+    </section>`;
+  }).join("")}
+    <div class="side"><button class="addcol" data-act="addcol" title="Add column" aria-label="Add column">+</button>
+      ${closed ? `<div class="closezone" data-zone="${esc(closed.id)}" title="Drop a case here to close it out"><span class="dot"></span>Drop to close</div>` : ""}</div>
+  </div></div>`;
+}
+function renderClosed(all){
+  const list = all.filter(c => c.isClosed).filter(pass).sort((a, b) => (b.closed || "9").localeCompare(a.closed || "9"));
+  document.getElementById("view").innerHTML = list.length ? `<div class="grid">${list.map(card).join("")}</div>`
+    : `<div class="empty" style="padding:40px">No closed cases${anyFilter() ? " match the filters" : " yet"}</div>`;
+}
+function card(c){
+  const s = sigOf(c), d = c.opened ? days(c.opened) : null;
+  const keyHtml = (c.tickets || []).length
+    ? `<span class="key${c.isClosed ? " done" : ""}">${ICON.bug}<a href="https://example.atlassian.net/browse/${esc(c.tickets[0])}" target="_blank" rel="noopener">${esc(c.tickets[0])}</a>${c.tickets.length > 1 ? ` +${c.tickets.length - 1}` : ""}</span>`
+    : `<span class="key">${c.kind === "task" ? ICON.task : ICON.case}<span>${c.kind === "task" ? "Task" : "Case"}</span></span>`;
+  const dateLine = c.isClosed ? (c.closed ? `Closed ${fmt(c.closed)}${c.resolved_by ? ` · fixed by ${esc(c.resolved_by)}` : ""}` : "Waiting for /close-out") : c.opened ? `Opened ${fmt(c.opened)} · ${d} ${d === 1 ? "day" : "days"}` : "";
+  const accent = s?.signal === "quiet" ? "var(--bad)" : s?.signal === "solved" ? "var(--ok)" : "";
+  const nn = (edits.notes[c.case] || []).length, nr = recsFor(c).length;
+  return `<article class="card${accent ? " accent" : ""}" tabindex="0" data-name="${esc(c.case)}" style="${accent ? `--ac:${accent}` : ""}">
+    <button class="kebab" data-kebab="${esc(c.case)}" aria-label="Actions for ${esc(c.case)}" aria-haspopup="menu">${ICON.kebab}</button>
+    <div class="t">${esc(c.case)}</div>
+    ${c.verdict ? `<span class="vchip" style="--vc:${VCOL[c.verdict] || "var(--muted-dot)"}"><span class="dot"></span>${esc(VERDICT[c.verdict] || c.verdict)}</span>` : ""}
+    ${c.severity || labelsOf(c).length ? `<div class="labels">${c.severity ? `<span class="lchip" style="background:color-mix(in srgb,${SEVCOL[c.severity]} 18%,transparent);color:${SEVCOL[c.severity]}" title="${esc(optText("severity", c.severity))}">${esc(c.severity.toUpperCase())}</span>` : ""}${labelsOf(c).slice(0, 3).map(l => `<span class="lchip">${esc(l)}</span>`).join("")}${labelsOf(c).length > 3 ? `<span class="lchip">+${labelsOf(c).length - 3}</span>` : ""}</div>` : ""}
+    ${dateLine ? `<div class="date${!c.isClosed && d >= 7 ? " old" : ""}">${dateLine}</div>` : ""}
+    ${s ? `<div class="sig" style="--sc:${SCOL[s.signal]}" title="${esc(SIG[s.signal])}"><span class="dot"></span><span>${esc(s.note)}</span></div>` : ""}
+    <div class="foot">${keyHtml}
+      ${c.pending ? `<span class="pend" title="The agent adds this card">New</span>` : c.moved ? `<span class="pend" title="${c.isClosed ? "The agent asks you to close it out" : "The agent updates the case file"}">Pending</span>` : ""}
+      ${c.fileEdits.length ? `<span class="pend" title="The agent updates ${c.fileEdits.join(", ")} in the case file">Edited</span>` : ""}
+      ${nr ? `<span class="rec-n" title="${nr} recommendation${nr > 1 ? "s" : ""}">💡 ${nr}</span>` : ""}
+      ${nn ? `<span class="cmt" title="Comments">💬 ${nn}</span>` : ""}
+      <span class="grow"></span>${!c.isClosed && d !== null ? `<span class="pts" title="${d} days open">${d}</span>` : ""}${avatar(c.region)}</div>
+  </article>`;
+}
+function renderList(all){
+  const list = all.filter(pass);
+  const H = [["case","Summary"],["status","Status"],["verdict","Verdict"],["ticket","Key"],["region","Region"],["opened","Opened"],["days","Days"],["signal","Check-up"]];
+  const val = (c, k) => k === "status" ? cols().indexOf(c.col) : k === "ticket" ? (c.tickets || [])[0] || "" : k === "days" ? (c.opened ? days(c.opened) : -1) : k === "signal" ? sigOf(c)?.signal || "" : (c[k] || "");
+  list.sort((a, b) => { const x = val(a, F.sort), y = val(b, F.sort); return (x > y ? 1 : x < y ? -1 : 0) * F.dir; });
+  document.getElementById("view").innerHTML = `<div class="listwrap"><table class="list"><thead><tr><th style="width:32px"></th>${H.map(([k, t]) => `<th data-sort="${k}">${t}${F.sort === k ? (F.dir > 0 ? " ↑" : " ↓") : ""}</th>`).join("")}</tr></thead><tbody>
+    ${list.map(c => { const s = sigOf(c); return `<tr class="row" data-open="${esc(c.case)}">
+      <td>${(c.tickets || []).length ? ICON.bug : c.kind === "task" ? ICON.task : ICON.case}</td>
+      <td class="sum">${esc(c.case)}</td>
+      <td><span class="spill" style="--sc:${cc(c.col.color)}"><span class="dot"></span>${esc(c.col.label)}</span></td>
+      <td>${c.verdict ? `<span class="spill" style="--sc:var(--text)"><span class="dot" style="--d:${VCOL[c.verdict]}"></span>${esc(VERDICT[c.verdict])}</span>` : '<span class="muted">None</span>'}</td>
+      <td>${(c.tickets || []).map(k => `<a href="https://example.atlassian.net/browse/${esc(k)}" target="_blank" rel="noopener">${esc(k)}</a>`).join(", ") || '<span class="muted">None</span>'}</td>
+      <td>${avatar(c.region)}</td><td>${fmt(c.opened)}</td><td>${c.opened && !c.isClosed ? days(c.opened) : ""}</td>
+      <td>${s ? `<span class="spill" style="--sc:${SCOL[s.signal]}"><span class="dot"></span>${SIG[s.signal]}</span>` : ""}</td></tr>`; }).join("") || `<tr><td colspan="9" class="muted" style="text-align:center;padding:28px">No cases match</td></tr>`}
+  </tbody></table></div>`;
+}
+
+/* ---------- floating menu ---------- */
+const pop = document.getElementById("pop");
+let popAnchor = null;
+function openPop(anchor, html, onPick){
+  closePop(); popAnchor = anchor; anchor.classList.add("active");
+  pop.innerHTML = html; pop.classList.add("open");
+  const r = anchor.getBoundingClientRect(), w = pop.offsetWidth, h = pop.offsetHeight;
+  pop.style.left = Math.max(8, Math.min(r.right - w, innerWidth - w - 8)) + "px";
+  pop.style.top = (r.bottom + h + 8 > innerHeight ? Math.max(8, r.top - h - 6) : r.bottom + 6) + "px";
+  pop.onclick = e => { const b = e.target.closest("[data-v]"); if (b && !b.disabled) onPick(b.dataset.v, b, e); };
+  pop.onchange = e => { if (e.target.matches("input[type=checkbox]")) onPick(e.target.value, e.target, e); };
+  pop.querySelector(".mi:not(:disabled)")?.focus({preventScroll:true});
+}
+function closePop(){ pop.classList.remove("open"); popAnchor?.classList.remove("active"); popAnchor = null; }
+const moveItems = c => cols().map(x => `<button class="mi${x.id === c.col.id ? " cur" : ""}" data-v="move:${esc(x.id)}"><span class="dot" style="--d:${cc(x.color)}"></span>${x.status === "closed" ? "Close (asks /close-out)" : esc(x.label)}</button>`).join("");
+document.addEventListener("click", e => { if (!e.target.closest("#pop") && popAnchor && !popAnchor.contains(e.target)) closePop(); });
+pop.addEventListener("keydown", e => {
+  const its = [...pop.querySelectorAll(".mi:not(:disabled)")], i = its.indexOf(document.activeElement);
+  if (e.key === "ArrowDown") { e.preventDefault(); its[(i + 1) % its.length]?.focus(); }
+  if (e.key === "ArrowUp") { e.preventDefault(); its[(i - 1 + its.length) % its.length]?.focus(); }
+});
+
+/* ---------- moving ---------- */
+function place(name, colId, orderList){
+  const b = byName(name), col = colById(colId);
+  const from = items().find(c => c.case === name)?.col.id;
+  if (b && col.status && b.status === col.status && homeCol(b).id === colId) delete edits.where[name];
+  else edits.where[name] = colId;
+  for (const k of Object.keys(edits.order)) edits.order[k] = edits.order[k].filter(n => n !== name);
+  if (orderList) edits.order[colId] = orderList;
+  save(); render();
+  document.querySelector(`.card[data-name="${CSS.escape(name)}"]`)?.classList.add("landed");
+  if (from !== colId) toast(col.status === "closed" ? `${name} moved to Closed. The agent asks you to close it out` : `${name} moved to ${col.label}`);
+}
+const view = document.getElementById("view");
+let drag = null;
+view.addEventListener("pointerdown", e => {
+  if (e.button !== 0 || e.target.closest(".kebab, a, button")) return;
+  const el = e.target.closest(".card"); if (!el) return;
+  drag = {el, name: el.dataset.name, sx: e.clientX, sy: e.clientY, t: Date.now(), type: e.pointerType, started: false, onBoard: !!el.closest(".board")};
+});
+window.addEventListener("pointermove", e => {
+  if (!drag) return;
+  if (!drag.started) {
+    if (!drag.onBoard || Math.hypot(e.clientX - drag.sx, e.clientY - drag.sy) < 6) return;
+    if (drag.type === "touch" && Date.now() - drag.t < 280) { drag = null; return; }
+    const r = drag.el.getBoundingClientRect();
+    drag.started = true; drag.dx = drag.sx - r.left; drag.dy = drag.sy - r.top;
+    drag.ghost = drag.el.cloneNode(true); drag.ghost.classList.add("ghost");
+    Object.assign(drag.ghost.style, {width: r.width + "px", left: r.left + "px", top: r.top + "px"});
+    document.body.appendChild(drag.ghost); drag.el.classList.add("placeholder"); document.body.classList.add("is-dragging"); closePop();
+  }
+  e.preventDefault();
+  drag.ghost.style.left = (e.clientX - drag.dx) + "px"; drag.ghost.style.top = (e.clientY - drag.dy) + "px";
+  const under = document.elementFromPoint(e.clientX, e.clientY);
+  const zone = under?.closest(".closezone"), col = zone ? null : under?.closest(".col");
+  document.querySelectorAll(".col.over, .closezone.over").forEach(x => x !== col && x !== zone && x.classList.remove("over"));
+  drag.zone = zone || null;
+  if (zone) zone.classList.add("over");
+  if (col) {
+    col.classList.add("over");
+    const list = col.querySelector(".cards");
+    const after = [...list.querySelectorAll(".card:not(.placeholder)")].find(s => { const r = s.getBoundingClientRect(); return e.clientY < r.top + r.height / 2; });
+    list.insertBefore(drag.el, after || list.querySelector(".empty"));
+  }
+  const m = 70; if (e.clientY < m) scrollBy(0, -14); else if (e.clientY > innerHeight - m) scrollBy(0, 14);
+  const w = document.querySelector(".board-wrap"); if (w) { const wr = w.getBoundingClientRect(); if (e.clientX < wr.left + m) w.scrollLeft -= 14; else if (e.clientX > wr.right - m) w.scrollLeft += 14; }
+}, {passive:false});
+window.addEventListener("pointerup", () => {
+  if (!drag) return;
+  const d = drag; drag = null;
+  if (!d.started) return openCase(d.name);
+  d.ghost.remove(); document.body.classList.remove("is-dragging");
+  document.querySelectorAll(".col.over, .closezone.over").forEach(x => x.classList.remove("over"));
+  if (d.zone) return place(d.name, d.zone.dataset.zone);
+  const col = d.el.closest(".col"); if (!col) return render();
+  place(d.name, col.dataset.col, [...col.querySelectorAll(".card")].map(x => x.dataset.name));
+});
+window.addEventListener("pointercancel", () => { if (drag?.started) { drag.ghost.remove(); document.body.classList.remove("is-dragging"); render(); } drag = null; });
+view.addEventListener("keydown", e => { if (e.key === "Enter" && e.target.matches(".card")) openCase(e.target.dataset.name); });
+document.addEventListener("click", e => {
+  const k = e.target.closest("[data-kebab]");
+  if (k) { const c = items().find(x => x.case === k.dataset.kebab);
+    return openPop(k, `<button class="mi" data-v="open">Open case</button><hr><div class="ttl">Move to</div>${moveItems(c)}`,
+      v => { closePop(); if (v === "open") openCase(c.case); else place(c.case, v.slice(5)); }); }
+  const o = e.target.closest("[data-open]"); if (o && !e.target.closest("a")) return openCase(o.dataset.open);
+  const add = e.target.closest("[data-add]"); if (add) return openCreate(add.dataset.add);
+  if (e.target.closest("[data-act=addcol]")) return addColumn();
+  const cm = e.target.closest("[data-colmenu]"); if (cm) return colMenu(cm);
+  const th = e.target.closest("th[data-sort]"); if (th) { F.dir = F.sort === th.dataset.sort ? -F.dir : 1; F.sort = th.dataset.sort; saveF(); return render(); }
+});
+
+/* ---------- columns ---------- */
+function setCols(list){ edits.columns = JSON.stringify(list) === JSON.stringify(DEFAULT_COLS) ? null : list; reconcile(); save(); render(); }
+function colMenu(btn){
+  const id = btn.dataset.colmenu, C = cols(), i = C.findIndex(c => c.id === id), col = C[i];
+  const vis = C.filter(c => c.status !== "closed"), vi = vis.findIndex(c => c.id === id);
+  const n = items().filter(c => c.col.id === id).length;
+  openPop(btn, `
+    <button class="mi" data-v="rename">Rename</button>
+    <button class="mi" data-v="left" ${vi === 0 ? "disabled" : ""}>Move left</button>
+    <button class="mi" data-v="right" ${vi === vis.length - 1 ? "disabled" : ""}>Move right</button>
+    <hr><div class="ttl">Colour</div>
+    <div class="sws">${COLORS.filter(c => c !== "closed").map(c => `<button class="sw${c === col.color ? " cur" : ""}" data-v="color:${c}" style="--d:${cc(c)}" title="${c}" aria-label="Colour ${c}"></button>`).join("")}</div>
+    <hr><div class="ttl" style="text-transform:none;letter-spacing:0">${col.status ? `Linked to case status "${STATUS_LABEL[col.status]}"` : "Board only: doesn't change the case file"}</div>
+    <button class="mi danger" data-v="delete" ${n ? "disabled title='Move its cards out first'" : ""}>Delete column${n ? ` (${n} cards)` : ""}</button>`,
+  v => {
+    closePop(); const L = cols().map(c => ({...c}));
+    const swap = dir => { const j = L.findIndex(c => c.id === vis[vi + dir].id); [L[i], L[j]] = [L[j], L[i]]; setCols(L); };
+    if (v === "left") swap(-1);
+    if (v === "right") swap(1);
+    if (v.startsWith("color:")) { L[i].color = v.slice(6); setCols(L); }
+    if (v === "delete") { if (vis.length < 2) return toast("Keep at least one column"); L.splice(i, 1); setCols(L); toast("Column deleted"); }
+    if (v === "rename") renameCol(id);
+  });
+}
+function renameCol(id){
+  const head = document.querySelector(`.col[data-col="${CSS.escape(id)}"] .colhead .name`); if (!head) return;
+  const inp = document.createElement("input"); inp.value = colById(id).label; head.replaceWith(inp); inp.select();
+  let done = false;
+  const finish = ok => { if (done) return; done = true; const v = inp.value.trim(); if (ok && v) setCols(cols().map(c => c.id === id ? {...c, label:v} : {...c})); else render(); };
+  inp.addEventListener("keydown", e => { if (e.key === "Enter") finish(true); if (e.key === "Escape") finish(false); });
+  inp.addEventListener("blur", () => finish(true));
+}
+function addColumn(){
+  if (F.view !== "board") { F.view = "board"; saveF(); }
+  const id = "c" + Date.now().toString(36), L = cols().map(c => ({...c})), ci = L.findIndex(c => c.status === "closed");
+  L.splice(ci === -1 ? L.length : ci, 0, {id, label:"New column", status:null, color:"teal"});
+  setCols(L);
+  setTimeout(() => { const w = document.querySelector(".board-wrap"); if (w) w.scrollLeft = 1e6; renameCol(id); }, 0);
+}
+
+/* ---------- toolbar and tabs ---------- */
+document.getElementById("q").addEventListener("input", e => { F.q = e.target.value; render(); });
+document.querySelector(".toolbar").addEventListener("click", e => {
+  const av = e.target.closest("[data-region]");
+  if (av) { const r = av.dataset.region; F.region = F.region.includes(r) ? F.region.filter(x => x !== r) : [...F.region, r]; saveF(); return render(); }
+  const fb = e.target.closest("[data-filter]");
+  if (fb) { const k = fb.dataset.filter, all = items();
+    const html = () => FOPTS[k].map(([v, t]) => `<label class="mi"><input type="checkbox" value="${v}" ${F[k].includes(v) ? "checked" : ""}> ${esc(t)}<span class="count">${all.filter(c => fval(k, c) === v).length}</span></label>`).join("");
+    openPop(fb, html(), v => { F[k] = F[k].includes(v) ? F[k].filter(x => x !== v) : [...F[k], v]; saveF(); render(); fb.classList.toggle("on", F[k].length > 0); });
+  }
+});
+document.getElementById("clearF").onclick = () => { F = {...F, q:"", region:[], verdict:[], signal:[], kind:[]}; document.getElementById("q").value = ""; saveF(); render(); };
+document.getElementById("tabs").addEventListener("click", e => { const t = e.target.closest("[data-view]"); if (t) { F.view = t.dataset.view; saveF(); render(); } });
+document.getElementById("boardMenuBtn").onclick = e => openPop(e.currentTarget, `
+  <button class="mi" data-v="copy">Copy changes for the agent</button>
+  <button class="mi" data-v="addcol">Add column</button>
+  <button class="mi" data-v="reset">Reset columns</button>`, v => {
+  closePop();
+  if (v === "copy") copyChanges();
+  if (v === "addcol") addColumn();
+  if (v === "reset") { const keep = cols().filter(c => !c.status && items().some(i => i.col.id === c.id)); const L = DEFAULT_COLS.map(c => ({...c})); L.splice(3, 0, ...keep); setCols(L); toast("Columns reset"); }
+});
+
+/* ---------- case view ---------- */
+const caseModal = document.getElementById("caseModal");
+function openCase(name){
+  const c = items().find(x => x.case === name); if (!c) return;
+  closePop();
+  const d = detailsOf(c), s = sigOf(c);
+  const links = [...(d.links || [])];
+  if (c.source && !links.some(l => l.url === c.source)) links.unshift({label:"Source conversation", url:c.source});
+  for (const k of c.tickets || []) if (!links.some(l => l.label === k)) links.push({label:k, url:`https://example.atlassian.net/browse/${k}`});
+  const host = u => { try { return new URL(u).hostname.replace(/^www\./, ""); } catch { return ""; } };
+  const notes = edits.notes[c.case] || [];
+  const recs = recsFor(c), kn = knowledgeFor(c);
+  const mine = (edits.memory[c.case] || []).map((m, i) => ({...m, by:"You", i}));
+  const claudes = ((DATA.memory || {})[c.case] || []).map(m => ({...m, by:"Agent"}));
+  const mem = [...mine, ...claudes].sort((a, b) => String(b.at).localeCompare(String(a.at)));
+  const tab = caseTab[name] || "overview";
+  const when = at => { const d = new Date(at); return isNaN(d) ? esc(at) : d.toLocaleString("en-GB", {day:"numeric", month:"short", ...(String(at).length > 10 ? {hour:"2-digit", minute:"2-digit"} : {})}); };
+  const TYPE = {fix:["Known fix","var(--ok)"], expected:["Expected","var(--v-expected)"], bug:["Open bug","var(--bad)"], gotcha:["Gotcha","var(--wait)"]};
+  const fieldVal = fd => {
+    const v = c[fd.k];
+    if (fd.k === "verdict") return v ? `<span class="dot" style="--d:${VCOL[v]}"></span>${esc(VERDICT[v])}` : "";
+    if (fd.k === "region") return v ? `${avatar(v)} ${esc(v)}` : "";
+    if (fd.k === "tickets") return (v || []).length ? `<span>${v.map(k => `<a href="https://example.atlassian.net/browse/${esc(k)}" target="_blank" rel="noopener">${esc(k)}</a>`).join(", ")}</span>` : "";
+    if (fd.k === "priority" || fd.k === "engagement" || fd.k === "channel") return v ? esc(fd.opts.find(o => o[0] === v)?.[1] || v) : "";
+    if (fd.k === "severity") return v ? `<span class="sev" style="--sv:${SEVCOL[v] || "var(--muted-dot)"}"><span class="dot"></span>${esc(optText("severity", v))}</span>` : "";
+    if (fd.k === "labels") return labelsOf(c).map(l => `<span class="lchip">${esc(l)}</span>`).join(" ");
+    if (fd.k === "follow_up") return v ? `${fmt(v)}${v <= today() && !c.isClosed ? ' <span class="pend" style="background:color-mix(in srgb,var(--bad) 16%,transparent);color:var(--bad)">Due</span>' : ""}` : "";
+    return esc(v || "");
+  };
+  document.getElementById("cCrumb").innerHTML = `<span style="display:flex;gap:8px;align-items:center">${c.kind === "task" ? ICON.task : (c.tickets || []).length ? ICON.bug : ICON.case} Support / ${esc((c.tickets || [])[0] || (c.kind === "task" ? "Task" : "Case"))}</span>`;
+  document.getElementById("cBody").innerHTML = `
+    <div>
+      <h2 id="cTitle">${esc(c.case)}</h2>
+      <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap">
+        <button class="statusbtn caret" id="cStatus" style="--cc:${cc(c.col.color)}" aria-haspopup="menu"><span class="dot"></span>${esc(c.col.label)}</button>
+        ${c.pending ? `<span class="pend">New: the agent adds it</span>` : c.moved ? `<span class="pend">${c.isClosed ? "The agent asks you to close it out" : "The agent updates the case file"}</span>` : ""}
+        ${c.fileEdits.length ? `<span class="pend">Edited: the agent updates the case file</span>` : ""}
+      </div>
+      ${s ? `<div class="sigbox" style="--sc:${SCOL[s.signal]}"><span class="dot"></span><span><b>${esc(SIG[s.signal])}</b>: ${esc(s.note)} <span class="muted">(check-up ${fmt(CHECKUP.date)})</span></span></div>` : ""}
+      ${recs.length ? `<div class="recs"><div class="recs-h">💡 Recommended</div>${recs.map(r => `<div class="rec">
+        <div class="rec-t">${esc(r.text)}</div>
+        <div class="rec-w">${esc(r.why)}${r.source?.url ? ` · <a href="${esc(r.source.url)}" target="_blank" rel="noopener">${esc(r.source.label)}</a>` : ""}</div>
+        <div class="rec-b"><button class="btn primary" data-rec="${esc(r.id)}" data-do="1">${r.act?.move ? "Move and tell the agent" : "Ask the agent"}</button><button class="btn subtle" data-rec="${esc(r.id)}" data-do="0">Dismiss</button></div></div>`).join("")}</div>` : ""}
+      <div class="mtabs" role="tablist">
+        ${[["overview","Overview"],["memory",`Memory bank <span class="n">${mem.length + kn.reduce((a, k) => a + k.items.length, 0)}</span>`],["comments",`Comments${notes.length ? ` <span class="n">${notes.length}</span>` : ""}`]].map(([k, t]) => `<button class="mtab" data-tab="${k}" aria-selected="${tab === k}">${t}</button>`).join("")}
+      </div>
+      ${tab === "overview" ? `
+      <div class="sec"><h4>What the client sees</h4><p>${esc(d.summary || c.note || "No description yet.")}</p></div>
+      ${d.cause ? `<div class="sec"><h4>What's wrong</h4><p>${esc(d.cause)}</p></div>` : ""}
+      <div class="sec"><h4>Next step <button class="edit-ic" data-edit-next title="Edit next step">✎</button></h4>
+        ${editNext === name ? `<textarea id="nextInp" class="inl" rows="2">${esc(edits.fields[name]?.next ?? d.next ?? "")}</textarea><div class="row" style="display:flex;gap:8px;margin-top:6px"><button class="btn primary" id="nextSave">Save</button><button class="btn subtle" id="nextCancel">Cancel</button></div>`
+          : `<p>${esc(edits.fields[name]?.next ?? d.next ?? "None yet.")}${edits.fields[name]?.next !== undefined ? ' <span class="pend">Edited</span>' : ""}</p>`}</div>
+      ${(d.learned || []).length ? `<div class="sec"><h4>What we learned <span class="muted" style="font-weight:400">${d.learned.length}</span></h4><ul class="kb">${d.learned.map(l => `<li><div>${esc(l.rule)}</div><small>${l.detail ? esc(l.detail) + " · " : ""}${esc(l.who || "")}${l.date ? ` · ${fmt(l.date)}` : ""}${l.confirmed ? " · engineer confirmed" : ""}${l.link ? ` · <a href="${esc(l.link)}" target="_blank" rel="noopener">source</a>` : ""}</small></li>`).join("")}</ul></div>` : ""}
+      ${(d.timeline || []).length ? `<div class="sec"><h4>Timeline <span class="muted" style="font-weight:400">${fmt(d.timeline[0].date)} to ${fmt(d.timeline[d.timeline.length - 1].date)}</span></h4><ol class="tl">${d.timeline.map(t => `<li><span class="tl-d">${fmt(t.date)}</span><div>${esc(t.text)}<small>${esc(t.source || "")}${t.link ? ` · <a href="${esc(t.link)}" target="_blank" rel="noopener">open</a>` : ""}</small></div></li>`).join("")}</ol></div>` : ""}
+      <div class="sec"><h4>Linked items</h4>${links.length ? `<ul class="links">${links.map(l => `<li><a href="${esc(l.url)}" target="_blank" rel="noopener">${/atlassian\.net\/browse/.test(l.url) ? ICON.bug : ICON.link}<b>${esc(l.label)}</b><span>${esc(host(l.url))}</span></a></li>`).join("")}</ul>` : `<p class="muted">No links in the case file.</p>`}</div>
+      ${(() => { const fs = (srcFiles || []).filter(f => caseOfFile(f.name) === c.orig); return fs.length ? `<div class="sec"><h4>Files for the agents</h4><ul class="links">${fs.map(f => `<li><a href="#" data-srcopen="${esc(f.name)}">${ICON.link}<b>${esc(shownName(f.name))}</b><span>${fsize(f.size)}</span></a></li>`).join("")}</ul></div>` : ""; })()}`
+      : tab === "memory" ? `
+      <div class="sec"><h4>Case notes <span class="muted" style="font-weight:400">: facts you and the agent keep about this case</span></h4>
+        <div class="memadd"><input id="memInp" class="inl" placeholder="e.g. Denis is their GCP admin; client prefers Slack over email"><button class="btn primary" id="memSave">Add</button></div>
+        ${mem.length ? `<ul class="mem">${mem.map(m => `<li><span class="av ${m.by === "You" ? "eu" : "agent"}">${m.by === "You" ? "AR" : "C"}</span><div><div>${esc(m.text)}</div><small>${m.by} · ${when(m.at)}${m.by === "You" && (!DATA.notes_seen || m.at > DATA.notes_seen) ? " · the agent hasn't read it yet" : ""}</small></div>${m.by === "You" ? `<button class="btn subtle icon" data-memdel="${m.i}" title="Remove" aria-label="Remove note">✕</button>` : ""}</li>`).join("")}</ul>` : `<p class="none" style="margin-top:8px">No notes yet. Anything you add here, the agent reads before working this case.</p>`}
+      </div>
+      ${kn.map(k => `<div class="sec"><h4>From the wiki: ${esc(k.page.replace(/\.md$/, ""))} <span class="muted" style="font-weight:400">${k.updated ? ` · read ${fmt(k.updated)}` : ""}</span> <button class="edit-ic" data-wopen="integrations/${esc(k.page)}" title="Open the full page in the Wiki tab">Open page</button></h4>
+        ${k.items.length ? `<ul class="kb">${k.items.map(it => { const [tl, tc] = TYPE[it.type] || ["Note","var(--muted-dot)"]; return `<li>
+          <div class="kb-h"><span class="spill" style="--sc:${tc}"><span class="dot"></span>${tl}</span><b>${esc(it.title)}</b>${it.seen >= 3 ? '<span class="canon" title="Seen 3 or more times">Canonical</span>' : ""}</div>
+          <div>${esc(it.text)}</div>
+          <small>${it.seen ? `Seen ${it.seen} time${it.seen > 1 ? "s" : ""}` : "Count not recorded"}${it.last ? `, last ${fmt(it.last)}` : ""}${it.last && days(it.last) > 182 ? " · older than 6 months" : ""}${it.link ? ` · <a href="${esc(it.link)}" target="_blank" rel="noopener">source</a>` : ""}</small></li>`; }).join("")}</ul>` : `<p class="none">Nothing on this page yet.</p>`}</div>`).join("") || `<div class="sec"><p class="none">No wiki page linked to this case yet. The next check-up adds it.</p></div>`}`
+      : `
+      <div class="sec comment">
+        <textarea id="cNote" placeholder="Ask the agent something about this case, e.g. 'client confirmed by phone, close it out'"></textarea>
+        <div class="row"><button class="btn primary" id="cSave">Save</button><span class="muted" style="font-size:12px">The agent acts on these in your next session.</span></div>
+        ${notes.slice().reverse().map(n => `<div class="cm"><span class="av">AR</span><div><span class="who">You</span><span class="when">${when(n.at)}</span><div>${esc(n.text)}</div></div></div>`).join("")}
+      </div>`}
+    </div>
+    <aside class="details"><h3>Details <span class="muted" style="font-weight:400;font-size:12px">click a value to edit</span></h3><dl>
+      <dt>${FICON.status}Status</dt><dd><span class="spill" style="--sc:${cc(c.col.color)}"><span class="dot"></span>${esc(c.col.label)}</span></dd>
+      ${c.kind === "case" ? `<dt>${FICON.file}Case file</dt><dd>${esc(STATUS_LABEL[c.status] || c.status)}</dd>` : `<dt>${FICON.file}Type</dt><dd>Task, no case file</dd>`}
+      ${FIELDS.map(fd => `<dt>${FICON[fd.k] || ""}${esc(fd.label)}</dt><dd>${editField === fd.k ? fieldEditor(fd, c) : `<button class="ed" data-field="${fd.k}" title="${fd.file ? "The agent writes this into the case file" : "Board only"}">${fieldVal(fd) || '<span class="muted">Add</span>'}${c.fileEdits.includes(fd.k) || (!fd.file && edits.fields[name] && fd.k in edits.fields[name]) ? ' <span class="edot" title="Edited, not applied yet"></span>' : ""}</button>`}</dd>`).join("")}
+      ${Object.entries(c.custom).map(([k, v]) => `<dt>${FICON.custom}${esc(k)}</dt><dd>${editField === "custom:" + k ? `<input class="inl" id="fldInp" value="${esc(v)}"><button class="btn primary" id="fldSave">Save</button>` : `<button class="ed" data-field="custom:${esc(k)}">${esc(v) || '<span class="muted">Add</span>'}</button><button class="btn subtle icon" data-custdel="${esc(k)}" title="Remove field" aria-label="Remove field">✕</button>`}</dd>`).join("")}
+      <dt>${FICON.opened}Opened</dt><dd>${c.opened ? `${fmt(c.opened)}${!c.isClosed ? ` <span class="muted">(${days(c.opened)} days)</span>` : ""}` : '<span class="muted">Unknown</span>'}</dd>
+      ${c.closed ? `<dt>${FICON.verdict}Closed</dt><dd>${fmt(c.closed)}${c.resolved_by ? ` <span class="muted">fixed by ${esc(c.resolved_by)}</span>` : ""}</dd>` : ""}
+      <dt>${FICON.reporter}Reporter</dt><dd><span class="av eu" style="width:22px;height:22px;font-size:9px">AR</span>Alex Rivera</dd>
+      ${c.file ? `<dt>${FICON.file}File</dt><dd class="muted" style="font-size:12px">cases/${esc(c.file)}</dd>` : ""}
+    </dl>
+    <div class="addfield">${addingField ? `<input class="inl" id="cfName" placeholder="Field name, e.g. Audit date"><input class="inl" id="cfVal" placeholder="Value"><div style="display:flex;gap:8px"><button class="btn primary" id="cfSave">Add field</button><button class="btn subtle" id="cfCancel">Cancel</button></div>` : `<button class="btn subtle" id="cfAdd">+ Add field</button>`}</div>
+    <p class="muted" style="font-size:12px;margin:0;padding:0 14px 14px">Verdict, region, company ID, monitor and Jira go into the case file. Priority, severity, engagement, channel, labels and the rest stay on the board, and the agent reads them.</p>
+    </aside>`;
+  caseModal.classList.add("on");
+  const $ = id => document.getElementById(id);
+  const rerender = () => { save(); render(); openCase(name); };
+  $("cStatus").onclick = e => { e.stopPropagation(); openPop(e.currentTarget, moveItems(c), v => { closePop(); place(name, v.slice(5)); openCase(name); }); };
+  const body = $("cBody");
+  body.onclick = e => {
+    const t = e.target.closest("[data-tab]"); if (t) { caseTab[name] = t.dataset.tab; editField = null; return openCase(name); }
+    const r = e.target.closest("[data-rec]");
+    if (r) { const rec = recs.find(x => x.id === r.dataset.rec);
+      edits.dismissed[c.case + "|" + rec.id] = true;
+      if (r.dataset.do === "1") { (edits.notes[name] ||= []).push({text: rec.act.note + ": " + rec.text, at:new Date().toISOString()}); if (rec.act.move) place(name, rec.act.move); toast("Sent to the agent"); }
+      return rerender(); }
+    const f = e.target.closest("[data-field]"); if (f && !e.target.closest("a")) { editField = f.dataset.field; return openCase(name); }
+    const cd = e.target.closest("[data-custdel]"); if (cd) { delete (edits.fields[name] ||= {}).custom?.[cd.dataset.custdel]; return rerender(); }
+    const md = e.target.closest("[data-memdel]"); if (md) { edits.memory[name].splice(+md.dataset.memdel, 1); return rerender(); }
+    if (e.target.closest("[data-edit-next]")) { editNext = name; return openCase(name); }
+  };
+  if ($("fldInp")) {
+    $("fldInp").focus();
+    const commit = () => {
+      const raw = $("fldInp").value.trim(), fld = edits.fields[name] ||= {};
+      if (editField.startsWith("custom:")) { (fld.custom ||= {})[editField.slice(7)] = raw; }
+      else { const fd = FIELDS.find(x => x.k === editField), ok = fd.check ? fd.check(raw) : true;
+        if (ok !== true) return toast(ok);
+        fld[fd.k] = fd.k === "tickets" ? raw.split(/[\s,]+/).filter(Boolean).map(s => s.toUpperCase()) : fd.norm ? fd.norm(raw) : (fd.k === "company_id" ? raw.toLowerCase() : raw);
+        if (!c.pending && fd.file && same(fd.k, fld[fd.k], c.orig[fd.k])) delete fld[fd.k]; }
+      editField = null; rerender(); toast("Saved for the agent");
+    };
+    $("fldSave").onclick = commit;
+    $("fldInp").onkeydown = e => { if (e.key === "Enter") commit(); if (e.key === "Escape") { e.stopPropagation(); editField = null; openCase(name); } };
+    if ($("fldInp").tagName === "SELECT") $("fldInp").onchange = commit;
+  }
+  if ($("cfAdd")) $("cfAdd").onclick = () => { addingField = true; openCase(name); $("cfName").focus(); };
+  if ($("cfCancel")) $("cfCancel").onclick = () => { addingField = false; openCase(name); };
+  if ($("cfSave")) $("cfSave").onclick = () => { const k = $("cfName").value.trim(); if (!k) return; ((edits.fields[name] ||= {}).custom ||= {})[k] = $("cfVal").value.trim(); addingField = false; rerender(); };
+  if ($("nextSave")) { $("nextInp").focus(); $("nextSave").onclick = () => { (edits.fields[name] ||= {}).next = $("nextInp").value.trim(); editNext = null; rerender(); }; $("nextCancel").onclick = () => { editNext = null; openCase(name); }; }
+  if ($("memSave")) { const add = () => { const v = $("memInp").value.trim(); if (!v) return; (edits.memory[name] ||= []).push({text:v, at:new Date().toISOString()}); rerender(); toast("Added to the memory bank"); };
+    $("memSave").onclick = add; $("memInp").onkeydown = e => { if (e.key === "Enter") add(); }; }
+  if ($("cSave")) $("cSave").onclick = () => {
+    const v = $("cNote").value.trim(); if (!v) return;
+    (edits.notes[name] ||= []).push({text:v, at:new Date().toISOString()}); rerender(); toast("Comment saved for the agent");
+  };
+}
+let caseTab = {}, editField = null, editNext = null, addingField = false;
+function fieldEditor(fd, c){
+  const v = fd.k === "tickets" ? (c.tickets || []).join(", ") : (c[fd.k] || "");
+  if (fd.type === "select") return `<select class="inl" id="fldInp">${fd.opts.map(([o, t]) => `<option value="${esc(o)}"${o === v ? " selected" : ""}>${esc(t)}</option>`).join("")}</select><button class="btn primary" id="fldSave">Save</button>`;
+  return `<input class="inl" id="fldInp" type="${fd.type === "date" ? "date" : "text"}" value="${esc(v)}" placeholder="${esc(fd.ph || "")}"><button class="btn primary" id="fldSave">Save</button>`;
+}
+function closeModals(){ document.querySelectorAll(".modal.on").forEach(m => m.classList.remove("on")); closePop(); editField = null; editNext = null; addingField = false; }
+document.querySelectorAll(".modal").forEach(m => m.addEventListener("click", e => { if (e.target === m || e.target.closest("[data-close]")) closeModals(); }));
+document.addEventListener("keydown", e => { if (e.key === "Escape") { if (pop.classList.contains("open")) closePop(); else closeModals(); } });
+
+/* ---------- create ---------- */
+const createModal = document.getElementById("createModal");
+const CREATE_GROUPS = [
+  ["Details", ["verdict", "priority", "severity", "labels"]],
+  ["Where it came from", ["engagement", "channel", "source", "contact"]],
+  ["Client and integration", ["region", "company_id", "monitor", "tickets"]],
+  ["Tracking", ["follow_up", "reporter"]]
+];
+function createRow(k){
+  const id = "fx_" + k;
+  if (k === "reporter") return `<div class="jrow"><span class="jlab">${FICON.reporter}Reporter</span><span class="static"><span class="av eu">AR</span>Alex Rivera</span></div>`;
+  if (k === "source") return `<div class="jrow"><label for="${id}">${FICON.source}Link</label><input id="${id}" type="url" placeholder="Intercom, Slack or email link"></div>`;
+  const fd = FIELDS.find(f => f.k === k);
+  const ctl = fd.type === "select"
+    ? `<select id="${id}">${fd.opts.map(([o, t]) => `<option value="${esc(o)}">${esc(t)}</option>`).join("")}</select>`
+    : `<input id="${id}" type="${fd.type === "date" ? "date" : "text"}" placeholder="${esc(fd.ph || "")}" autocomplete="off">`;
+  return `<div class="jrow"><label for="${id}" title="${fd.file ? "Goes into the case file" : "Board only"}">${FICON[k]}${esc(fd.label)}</label>${ctl}<span class="err" id="${id}_err" hidden></span></div>`;
+}
+function openCreate(colId){
+  const f = document.getElementById("createForm"), keep = document.getElementById("fAnother").checked; f.reset(); document.getElementById("fAnother").checked = keep;
+  const open = cols().filter(c => c.status !== "closed");
+  document.getElementById("crIcon").innerHTML = ICON.case;
+  document.getElementById("fRows").innerHTML =
+    `<div class="jrow" style="margin-top:12px"><label for="fx_status">${FICON.status}Status</label><select id="fx_status">${open.map(c => `<option value="${esc(c.id)}">${esc(c.label)}</option>`).join("")}</select></div>`
+    + CREATE_GROUPS.map(([g, ks]) => `<div class="jgroup">${g}</div>${ks.map(createRow).join("")}`).join("");
+  document.getElementById("fx_status").value = open.some(c => c.id === colId) ? colId : open[0]?.id;
+  createModal.classList.add("on"); document.getElementById("fClient").focus();
+}
+document.getElementById("createBtn").onclick = () => openCreate();
+document.getElementById("createForm").addEventListener("submit", e => {
+  e.preventDefault();
+  const v = id => (document.getElementById(id)?.value || "").trim();
+  if (!v("fClient") || !v("fInt")) { (v("fClient") ? document.getElementById("fInt") : document.getElementById("fClient")).focus(); return toast("Client and integration are required"); }
+  const name = `${v("fClient")} <> ${v("fInt")}`;
+  if (items().some(c => c.case === name)) return toast("A card with that name already exists");
+  let bad = null;
+  for (const fd of FIELDS) { const el = document.getElementById("fx_" + fd.k + "_err"); if (!el) continue;
+    const ok = fd.check ? fd.check(v("fx_" + fd.k)) : true; el.hidden = ok === true; el.textContent = ok === true ? "" : ok; if (ok !== true && !bad) bad = fd.k; }
+  if (bad) { document.getElementById("fx_" + bad).focus(); return; }
+  const card = {case:name, opened:today(), source:v("fx_source"), note:v("fNote"),
+    tickets: v("fx_tickets") ? v("fx_tickets").split(/[\s,]+/).filter(Boolean).map(s => s.toUpperCase()) : []};
+  for (const fd of FIELDS) { if (fd.k === "tickets") continue; const raw = v("fx_" + fd.k);
+    if (raw) card[fd.k] = fd.norm ? fd.norm(raw) : fd.k === "company_id" ? raw.toLowerCase() : raw; }
+  edits.added.push(card);
+  edits.where[name] = v("fx_status");
+  save(); render(); toast(`${name} created`);
+  if (document.getElementById("fAnother").checked) openCreate(v("fx_status")); else closeModals();
+});
+
+/* ---------- wiki tab: the support-kit wiki, live and read-only, plus files for the agents ---------- */
+let sa = null, saOk = false, wiki = null, srcFiles = null, wikiSel = "index.md", wikiQ = "", upCase = "";
+const stemOf = c => c && c.file ? c.file.replace(/\.md$/, "") : "";
+const caseOfFile = n => base.find(c => c.file && n.startsWith(stemOf(c) + "__"));
+const shownName = n => { const c = caseOfFile(n); return c ? n.slice(stemOf(c).length + 2) : n; };
+const fsize = b => b < 1024 ? b + " B" : b < 1048576 ? Math.round(b / 1024) + " KB" : (b / 1048576).toFixed(1) + " MB";
+let saErr = "", wikiSkipped = 0;
+const errText = e => (e && (e.name ? e.name + ": " : "") + (e.message || "")) || String(e);
+async function saInit(){
+  const h = await idbGet("sa"); if (!h) return;
+  sa = h; try { saOk = (await h.queryPermission({mode:"readwrite"})) === "granted"; } catch (e) { saErr = "Couldn't check access: " + errText(e); }
+  if (saOk) await loadWiki();
+}
+/* Picks (or re-picks) the support-kit folder. fresh = always open the picker. */
+async function connectSA(fresh){
+  saErr = "";
+  try {
+    let h = fresh ? null : sa;
+    if (h) {
+      let state = "denied";
+      try { state = await h.requestPermission({mode:"readwrite"}); }
+      catch (e) { h = null; saErr = "The saved folder can't be used any more (" + errText(e) + "). Pick it again."; }
+      if (h && state !== "granted") { saOk = false; saErr = "Access wasn't allowed. Click again and choose Allow (or Edit files) in the browser box."; render(); return; }
+    }
+    if (!h) {
+      h = await window.showDirectoryPicker({id:"support-kit", mode:"readwrite"});
+      try { await h.getFileHandle("CLAUDE.md"); await h.getDirectoryHandle("wiki"); }
+      catch { saErr = "That isn't the support-kit folder. Pick your support-kit folder (it holds CLAUDE.md and wiki)."; render(); return; }
+      await idbSet("sa", h);
+    }
+    sa = h; saOk = true;
+    await loadWiki();
+    if (saOk) toast(`Wiki connected: ${wiki.pages.length} pages${wikiSkipped ? `, ${wikiSkipped} skipped` : ""}`);
+  } catch (e) {
+    if (e && e.name === "AbortError") saErr = "No folder picked.";
+    else saErr = "Couldn't connect: " + errText(e);
+  }
+  render();
+}
+async function loadWiki(){
+  const pages = []; wikiSkipped = 0;
+  const walk = async (dir, pre) => {
+    for await (const [n, h] of dir.entries()) {
+      try {
+        if (h.kind === "directory") await walk(h, pre + n + "/");
+        else if (n.endsWith(".md")) {
+          const text = await (await h.getFile()).text();
+          const t = text.match(/^#\s+(.+)$/m);
+          pages.push({path: pre + n, folder: pre.replace(/\/$/, ""), name: n, title: t ? t[1].trim() : n.replace(/\.md$/, ""), text});
+        }
+      } catch { wikiSkipped++; }
+    }
+  };
+  try {
+    await walk(await sa.getDirectoryHandle("wiki"), "");
+  } catch (e) { saOk = false; wiki = null; saErr = "Couldn't read the wiki folder: " + errText(e); return; }
+  pages.sort((a, b) => a.path.localeCompare(b.path));
+  wiki = {pages, at: new Date()};
+  try { await loadSources(); } catch (e) { srcFiles = []; saErr = "Wiki loaded, but the sources folder couldn't be read: " + errText(e); }
+}
+async function loadSources(){
+  const d = await sa.getDirectoryHandle("sources", {create:true}), out = [];
+  for await (const [n, h] of d.entries()) if (h.kind === "file" && n !== ".gitkeep" && n !== "README.md") { try { const f = await h.getFile(); out.push({name:n, size:f.size, at:f.lastModified}); } catch {} }
+  srcFiles = out.sort((a, b) => b.at - a.at);
+}
+async function freeName(d, name){
+  const dot = name.lastIndexOf("."), stem = dot > 0 ? name.slice(0, dot) : name, ext = dot > 0 ? name.slice(dot) : "";
+  for (let k = 1, cand = name; ; cand = `${stem} (${++k})${ext}`) { try { await d.getFileHandle(cand); } catch { return cand; } }
+}
+async function addFiles(list){
+  if (wiki && wiki.demo) return toast("Demo mode: connect a support-kit folder to add files");
+  if (!saOk) return toast("Connect the support-kit folder first");
+  if (!list.length) return;
+  try {
+    const d = await sa.getDirectoryHandle("sources"), pre = upCase ? stemOf(byName(upCase)) : "";
+    for (const f of list) {
+      const name = await freeName(d, (pre ? pre + "__" : "") + f.name.replace(/[\\/:*?"<>|]/g, "_"));
+      const w = await (await d.getFileHandle(name, {create:true})).createWritable(); await w.write(f); await w.close();
+    }
+    await loadSources(); render(); toast(`${list.length} file${list.length > 1 ? "s" : ""} added for the agents`);
+  } catch { toast("Couldn't save the file. Try Connect again"); }
+}
+async function openSource(n){
+  try {
+    const f = await (await (await sa.getDirectoryHandle("sources")).getFileHandle(n)).getFile();
+    /* Pages and scripts open as plain text, so a dropped file can never run code here. */
+    const safe = /html|svg|xml|javascript/i.test(f.type) || /\.(html?|svg|xml|js|mjs)$/i.test(n) ? new Blob([f], {type:"text/plain"}) : f;
+    const u = URL.createObjectURL(safe); window.open(u, "_blank", "noopener"); setTimeout(() => URL.revokeObjectURL(u), 60000);
+  } catch { toast("Couldn't open that file"); }
+}
+async function removeSource(n){
+  if (!confirm(`Delete "${n}" from support-kit\\sources? This can't be undone.`)) return;
+  try { await (await sa.getDirectoryHandle("sources")).removeEntry(n); await loadSources(); render(); toast("File deleted"); }
+  catch { toast("Couldn't delete it"); }
+}
+/* A small markdown renderer: headings, lists, tables, code, quotes, bold and links. Everything is escaped first. */
+const resolvePath = (from, rel) => { const parts = from.split("/").slice(0, -1); for (const p of rel.split("/")) { if (p === "..") parts.pop(); else if (p && p !== ".") parts.push(p); } return parts.join("/"); };
+function mdInline(s, path){
+  return esc(s)
+    .replace(/`([^`]+)`/g, "<code>$1</code>")
+    .replace(/\*\*([^*]+)\*\*/g, "<b>$1</b>")
+    .replace(/\[([^\]]+)\]\(([^)\s]+)\)/g, (m, t, u) => /^https?:/.test(u) ? `<a href="${u}" target="_blank" rel="noopener">${t}</a>`
+      : /\.md(#.*)?$/.test(u) ? `<a href="#" data-wlink="${resolvePath(path, u.replace(/#.*$/, ""))}">${t}</a>` : t);
+}
+function md(text, path){
+  const L = text.replace(/\r/g, "").split("\n"), out = [];
+  let i = 0, list = null, para = false;
+  if (L[0] === "---") { const e = L.indexOf("---", 1); if (e > 0) i = e + 1; }
+  const close = () => { if (list) out.push(`</${list}>`); list = null; para = false; };
+  const row = r => r.trim().replace(/^\||\|$/g, "").split("|").map(c => c.trim());
+  for (; i < L.length; i++) {
+    const l = L[i]; let m;
+    if (/^```/.test(l)) { close(); const b = []; i++; while (i < L.length && !/^```/.test(L[i])) b.push(L[i++]); out.push(`<pre>${esc(b.join("\n"))}</pre>`); continue; }
+    if ((m = l.match(/^(#{1,4})\s+(.*)$/))) { close(); out.push(`<h${m[1].length + 1}>${mdInline(m[2], path)}</h${m[1].length + 1}>`); continue; }
+    if (/^\s*\|.*\|\s*$/.test(l)) { close(); const rs = []; while (i < L.length && /^\s*\|.*\|\s*$/.test(L[i])) rs.push(L[i++]); i--;
+      const body = rs.filter(r => !/^\s*\|[\s:|-]+\|\s*$/.test(r));
+      out.push(`<div class="tbl"><table>${body.map((r, j) => `<tr>${row(r).map(c => j ? `<td>${mdInline(c, path)}</td>` : `<th>${mdInline(c, path)}</th>`).join("")}</tr>`).join("")}</table></div>`); continue; }
+    if ((m = l.match(/^(\s*)[-*]\s+(.*)$/))) { if (list !== "ul") { close(); out.push("<ul>"); list = "ul"; } out.push(`<li${m[1].length >= 2 ? ' class="sub"' : ""}>${mdInline(m[2], path)}</li>`); continue; }
+    if ((m = l.match(/^\s*\d+\.\s+(.*)$/))) { if (list !== "ol") { close(); out.push("<ol>"); list = "ol"; } out.push(`<li>${mdInline(m[1], path)}</li>`); continue; }
+    if (list && /^\s{2,}\S/.test(l)) { out[out.length - 1] = out[out.length - 1].replace(/<\/li>$/, " " + mdInline(l.trim(), path) + "</li>"); continue; }
+    if (/^>\s?/.test(l)) { close(); out.push(`<blockquote>${mdInline(l.replace(/^>\s?/, ""), path)}</blockquote>`); continue; }
+    if (!l.trim()) { close(); continue; }
+    if (para && !list) { out[out.length - 1] = out[out.length - 1].replace(/<\/p>$/, " " + mdInline(l, path) + "</p>"); continue; }
+    close(); out.push(`<p>${mdInline(l, path)}</p>`); para = true;
+  }
+  close(); return out.join("");
+}
+const WGROUPS = [["","Start"],["integrations","Integrations"],["playbooks","Playbooks"],["systems","Systems"],["templates","Templates"],["team","Team"],["workflows","Workflows"],["style","Style"]];
+const KB = (window.KB_INDEX && window.KB_INDEX.items) || [];
+const KBSRC = {notion:"Notion", help:"Help Center"};
+const kbHit = (it, words) => words.every(w => (it.title + " " + it.path + " " + it.summary).toLowerCase().includes(w));
+function wikiNav(){
+  const words = wikiQ.toLowerCase().split(/\s+/).filter(Boolean), pages = wiki ? wiki.pages : [];
+  const hit = p => words.every(w => (p.title + " " + p.path + " " + p.text).toLowerCase().includes(w));
+  const groups = [...WGROUPS, ...[...new Set(pages.map(p => p.folder))].filter(f => !WGROUPS.some(g => g[0] === f)).map(f => [f, f])];
+  const wikiHtml = groups.map(([f, t]) => { const ps = pages.filter(p => p.folder === f && hit(p));
+    return ps.length ? `<h5>${esc(t)} <span>${ps.length}</span></h5>${ps.map(p => `<button class="pg${p.path === wikiSel ? " cur" : ""}" data-wpage="${esc(p.path)}" title="${esc(p.path)}">${esc(p.title)}</button>`).join("")}` : ""; }).join("");
+  /* Notion and Help Center: listed in full only when searching, so the nav stays short. */
+  const kbHtml = Object.entries(KBSRC).map(([s, t]) => { const all = KB.map((it, i) => ({it, i})).filter(x => x.it.src === s), ms = all.filter(x => kbHit(x.it, words));
+    const show = words.length ? ms.slice(0, 40) : [];
+    return `<h5>${t} <span>${words.length ? ms.length : all.length}</span></h5>${show.map(({it, i}) => `<button class="pg${wikiSel === "kb:" + i ? " cur" : ""}" data-wpage="kb:${i}" title="${esc(it.path)}">${esc(it.title)}</button>`).join("") || (words.length ? "" : `<p class="muted small" style="margin:0 8px">Search to list them</p>`)}`; }).join("");
+  const tops = topicMatches(wikiQ);
+  const topHtml = tops.length ? `<h5>Topics <span>${tops.length}</span></h5>${tops.map(t => `<button class="pg${wikiSel === t.key ? " cur" : ""}" data-wpage="${esc(t.key)}" title="${esc(t.sub)}">${esc(t.title)}<br><small class="muted">${esc(t.sub)}</small></button>`).join("")}` : "";
+  return topHtml + (wikiHtml || (wiki ? "" : `<p class="muted small" style="margin:8px">Connect support-kit to read the wiki here.</p>`)) + kbHtml;
+}
+function kbCard(it){
+  const old = it.edited && days(it.edited) > 182;
+  return `<div class="crumbs">${esc(KBSRC[it.src])} / ${esc(it.path)}</div>
+    <div class="md"><h2>${esc(it.title)}</h2>
+    <p>${esc(it.summary || "No summary.")}</p>
+    <p class="muted">Last edited ${fmt(it.edited)}${it.edited && it.edited.slice(0, 4) !== today().slice(0, 4) ? " " + it.edited.slice(0, 4) : ""}${old ? ` · <span style="color:var(--wait)">older than six months: check it against newer sources</span>` : ""}</p>
+    <p><a class="btn primary" href="${esc(it.url)}" target="_blank" rel="noopener" style="text-decoration:none">Open in ${esc(KBSRC[it.src])}</a></p>
+    <p class="muted small">Read-only index: the title, date and link come from ${esc(KBSRC[it.src])}; the summary is short. Open the page for the full text.</p></div>`;
+}
+/* ---------- topic hub: everything known about an integration, monitor or platform area ---------- */
+const FACTS = window.KB_FACTS || {facts:[], releases:[]};
+const MONS = (window.KB_INDEX && window.KB_INDEX.monitors) || [];
+const integNames = (() => {
+  const m = new Map(), add = n => { n = (n || "").trim(); if (n.length > 1 && !m.has(n.toLowerCase())) m.set(n.toLowerCase(), n); };
+  KB.filter(it => it.src === "help").forEach(it => { const x = it.title.match(/^(.+?)\s*-\s*User Guide$/i); if (x) add(x[1]); });
+  MONS.forEach(mo => (mo.integ || "").split(",").forEach(add));
+  return [...m.values()].sort((a, b) => a.localeCompare(b));
+})();
+const wTerms = p => { const inner = (p.title.match(/\(([^)]*)\)/) || [, ""])[1]; return [p.title.replace(/\s*\(.*\)\s*$/, ""), ...inner.split(",")].map(s => s.trim()).filter(s => s.length > 1); };
+const termRe = terms => new RegExp("(?<![A-Za-z0-9])(" + terms.map(rxEsc).join("|") + ")(?![A-Za-z0-9])", "i");
+function topicOf(key){
+  const [, k, v] = key.match(/^topic:(\w):(.*)$/) || [];
+  if (k === "m") { const mo = MONS.find(x => x.id === v); return mo && {kind:"Monitor", title:`${mo.id} ${mo.name}`, terms:[mo.id, mo.internal].filter(Boolean), mo}; }
+  if (k === "w") { const p = wiki && wiki.pages.find(x => x.path === v); return p && {kind:"Wiki topic", title:p.title, terms:wTerms(p), page:p}; }
+  if (k === "i") return v && {kind:"Integration", title:v, terms:[v]};
+  if (k === "q") return v && {kind:"Search", title:`"${v}"`, terms:[v], free:true};
+  return null;
+}
+function topicMatches(q){
+  const s = q.trim().toLowerCase(); if (s.length < 2) return [];
+  const out = [], has = k => out.some(o => o.key === k);
+  MONS.filter(m => m.id.toLowerCase() === s || m.internal.toLowerCase() === s).forEach(m => out.push({key:"topic:m:" + m.id, title:`${m.id} ${m.name}`, sub:"Monitor"}));
+  MONS.filter(m => !has("topic:m:" + m.id) && (m.id.toLowerCase().startsWith(s) || m.name.toLowerCase().includes(s) || m.internal.toLowerCase().includes(s))).slice(0, 6)
+    .forEach(m => out.push({key:"topic:m:" + m.id, title:`${m.id} ${m.name}`, sub:"Monitor" + (m.integ ? " · " + m.integ : "")}));
+  if (wiki) wiki.pages.filter(p => p.folder === "integrations" && p.name !== "README.md" && p.title.toLowerCase().includes(s)).slice(0, 4)
+    .forEach(p => out.push({key:"topic:w:" + p.path, title:p.title, sub:"Wiki topic"}));
+  integNames.filter(n => n.toLowerCase().includes(s)).slice(0, 5).forEach(n => out.push({key:"topic:i:" + n, title:n, sub:"Integration"}));
+  out.push({key:"topic:q:" + q.trim(), title:`Everything mentioning "${q.trim()}"`, sub:"Search all sources"});
+  return out;
+}
+function hubHtml(t, all){
+  const re = termRe(t.terms), hit = s => re.test(s || "");
+  const old = d => d && days(d) > 182 ? ` <span class="old">older than 6 months</span>` : "";
+  const sec = (title, n, body) => n ? `<div class="sec hub"><h4>${title} <span class="muted" style="font-weight:400">${n}</span></h4>${body}</div>` : "";
+  const page = t.page || (wiki && wiki.pages.find(p => p.folder === "integrations" && wTerms(p).some(x => x.toLowerCase() === t.title.toLowerCase())));
+  const lines = [];
+  if (wiki) for (const p of wiki.pages) p.text.split(/\r?\n/).forEach(l => {
+    if (/^\s*#/.test(l) || /^\s*-\s*\d{4}-\d{2}-\d{2}\s/.test(l) || !l.trim() || !hit(l)) return;
+    lines.push({p, l: l.replace(/^\s*([-*]|\d+\.)\s+/, "").trim()});
+  });
+  lines.sort((a, b) => (b.p === page) - (a.p === page));
+  const facts = (FACTS.facts || []).filter(f => f.review !== "rejected" && hit([f.topic, ...(f.also || []), f.fact].join(" ")))
+    .sort((a, b) => ({current:0, unsure:1, superseded:2}[a.status] ?? 1) - ({current:0, unsure:1, superseded:2}[b.status] ?? 1) || String(b.date).localeCompare(String(a.date)));
+  const rel = (FACTS.releases || []).filter(r => hit([r.title, ...(r.topics || []), r.summary].join(" "))).sort((a, b) => String(b.date).localeCompare(String(a.date)));
+  const help = KB.map((it, i) => ({it, i})).filter(x => x.it.src === "help" && hit(x.it.title + " " + (t.free ? x.it.summary : "")));
+  const notion = KB.map((it, i) => ({it, i})).filter(x => x.it.src === "notion" && hit(x.it.title + " " + x.it.summary));
+  const mons = t.mo ? [] : MONS.filter(m => hit(m.integ) || (t.free && hit(m.name)));
+  const cases = all.filter(c => hit([c.case, c.monitor, (detailsOf(c).summary || "")].join(" ")) || (page && (c.kb || []).includes(page.name)));
+  const files = (srcFiles || []).filter(f => cases.some(c => caseOfFile(f.name) === c.orig));
+  const STAT = {current:["Current","var(--ok)"], unsure:["Unsure","var(--wait)"], superseded:["Superseded","var(--muted-dot)"]};
+  const kbRow = ({it, i}) => `<li><div class="kb-h"><b><a href="#" data-wpage="kb:${i}">${esc(it.title)}</a></b></div><small>${esc(it.summary || it.path)} · edited ${fmt(it.edited)}${it.edited && it.edited.slice(0, 4) !== today().slice(0, 4) ? " " + it.edited.slice(0, 4) : ""}${old(it.edited)}</small></li>`;
+  return `<div class="crumbs">${esc(t.kind)}</div><div class="md"><h2>${esc(t.title)}</h2></div>
+    ${t.mo ? `<p style="margin:0 0 6px">${esc(t.mo.desc || "No description in the admin sheet.")}</p>
+      <p class="muted small" style="margin:0">${t.mo.internal ? `Internal name <code>${esc(t.mo.internal)}</code> · ` : ""}admin sheet</p>
+      ${t.mo.integ ? `<div class="usedby">Fed by: ${t.mo.integ.split(",").map(s => s.trim()).filter(Boolean).map(n => `<button class="chip" data-wpage="topic:i:${esc(n)}">${esc(n)}</button>`).join("")}</div>` : ""}` : ""}
+    ${page && page !== t.page ? `<p><button class="btn" data-wpage="${esc(page.path)}">Read the wiki page: ${esc(page.title)}</button></p>` : t.page ? `<p><button class="btn" data-wpage="${esc(t.page.path)}">Read the full wiki page</button></p>` : ""}
+    ${!wiki ? `<p class="muted small">The wiki isn't connected, so wiki lines are missing here. Connect support-kit on this tab to add them.</p>` : ""}
+    ${sec("From the wiki", lines.length, `<ul class="kb">${lines.slice(0, 25).map(({p, l}) => `<li class="${/superseded/i.test(l) ? "sup" : ""}"><div>${mdInline(l, p.path)}</div><small><a href="#" data-wpage="${esc(p.path)}">${esc(p.title)}</a>${/superseded/i.test(l) ? " · superseded" : ""}</small></li>`).join("")}</ul>${lines.length > 25 ? `<p class="muted small">${lines.length - 25} more lines: search the wiki for the full list.</p>` : ""}`)}
+    ${sec("Logic from Slack", facts.length, `<ul class="kb">${facts.slice(0, 20).map(f => { const [sl, sc] = STAT[f.status] || STAT.unsure;
+      return `<li class="${f.status === "superseded" ? "sup" : ""}"><div class="kb-h"><span class="spill" style="--sc:${sc}"><span class="dot"></span>${sl}</span>${f.review !== "approved" ? `<span class="pend">Not reviewed</span>` : ""}</div><div>${esc(f.fact)}</div>
+        <small>${esc(f.who || "")}${f.role ? ` (${esc(f.role)})` : ""} · ${fmt(f.date)}${old(f.date)}${f.status_why ? ` · ${esc(f.status_why)}` : ""}${f.link ? ` · <a href="${esc(f.link)}" target="_blank" rel="noopener">source</a>` : ""}${f.wiki ? ` · <a href="#" data-wpage="${esc(f.wiki.replace(/^wiki\//, ""))}">in the wiki</a>` : ""}${f.check ? `<br><span class="old">${esc(f.check)}: check it still holds</span>${f.check_link ? ` <a href="${esc(f.check_link)}" target="_blank" rel="noopener">release</a>` : ""}` : ""}</small></li>`; }).join("")}</ul>`)}
+    ${sec("Recent changes", rel.length, `<ul class="kb">${rel.slice(0, 10).map(r => `<li><div class="kb-h"><b>${esc(r.title)}</b></div><div>${esc(r.summary)}</div><small>${fmt(r.date)} · ${esc(r.who || "")}${r.link ? ` · <a href="${esc(r.link)}" target="_blank" rel="noopener">#product-updates</a>` : ""}</small></li>`).join("")}</ul>`)}
+    ${sec("Setup and how-to (Help Center)", help.length, `<ul class="kb">${help.slice(0, 10).map(kbRow).join("")}</ul>`)}
+    ${sec("Troubleshooting and internals (Notion)", notion.length, `<ul class="kb">${notion.slice(0, 12).map(kbRow).join("")}</ul>`)}
+    ${sec("Monitors", mons.length, `<div class="usedby" style="margin:0">${mons.slice(0, 40).map(m => `<button class="chip" data-wpage="topic:m:${esc(m.id)}" title="${esc(m.name)}">${esc(m.id)}</button>`).join("")}</div>`)}
+    ${sec("Your cases", cases.length, `<div class="usedby" style="margin:0">${cases.map(c => `<button class="chip" data-open="${esc(c.case)}">${esc(c.case)}${c.isClosed ? " (closed)" : ""}</button>`).join("")}</div>`)}
+    ${sec("Files for the agents", files.length, `<div class="usedby" style="margin:0">${files.map(f => `<button class="chip" data-srcopen="${esc(f.name)}">${esc(shownName(f.name))}</button>`).join("")}</div>`)}
+    ${!lines.length && !facts.length && !rel.length && !help.length && !notion.length && !mons.length && !cases.length ? `<p class="none">Nothing found for this yet.</p>` : ""}`;
+}
+function renderWiki(all){
+  const v = document.getElementById("view");
+  if (!(wiki && wiki.demo) && !("showDirectoryPicker" in window)) { v.innerHTML = `<div class="panel connect-card"><h3>Open this page in Chrome or Edge</h3><p class="muted">The Wiki tab reads the support-kit folder, which only Chrome and Edge allow.</p></div>`; return; }
+  const ready = saOk && wiki;
+  const connect = `<div class="connect-card" style="margin:20px auto"><h3>Connect the support-kit folder</h3>
+    <p class="muted">Pick <b>your support-kit folder</b> once. This tab then reads the wiki live (read-only: changes still go through /refine and /close-out) and saves files you add into its <b>sources</b> folder, where the agents read them. Nothing leaves this computer. Notion and Help Center search on the left works without it.</p>
+    ${saErr ? `<p style="color:var(--bad);margin:0 0 14px">${esc(saErr)}</p>` : ""}
+    <div style="display:flex;gap:8px;justify-content:center;flex-wrap:wrap">
+      <button class="btn primary" data-act="sa-connect">${sa ? "Allow access again" : "Connect support-kit"}</button>
+      ${sa ? `<button class="btn" data-act="sa-pick">Pick folder again</button>` : ""}
+    </div></div>`;
+  const kbSel = /^kb:\d+$/.test(wikiSel || "") ? KB[+wikiSel.slice(3)] : null;
+  const topic = /^topic:/.test(wikiSel || "") ? topicOf(wikiSel) : null;
+  const pg = kbSel || topic || !ready ? null : (wiki.pages.find(p => p.path === wikiSel) || wiki.pages.find(p => p.path === "index.md") || wiki.pages[0]);
+  if (pg) wikiSel = pg.path;
+  const used = pg && pg.folder === "integrations" ? all.filter(c => (c.kb || []).includes(pg.name)) : [];
+  const openCases = all.filter(c => c.kind === "case" && c.file && !c.isClosed);
+  if (upCase && !openCases.some(c => c.case === upCase)) upCase = "";
+  v.innerHTML = `<div class="kbwrap">
+    <aside class="panel kbnav">
+      <div class="search"><svg width="14" height="14" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.6"><circle cx="7" cy="7" r="5"/><path d="M11 11l3.5 3.5"/></svg><input id="wq" placeholder="Search the wiki" aria-label="Search the wiki" value="${esc(wikiQ)}"></div>
+      <div id="wnav">${wikiNav()}</div>
+      <div class="muted small" style="margin-top:14px">${ready ? `${wiki.pages.length} wiki pages, read ${wiki.at.toLocaleTimeString("en-GB", {hour:"2-digit", minute:"2-digit"})} <button class="edit-ic" data-act="wreload">Reload</button><br>` : ""}Notion and Help Center index from ${window.KB_INDEX ? fmt(window.KB_INDEX.updated) : "never"}</div>
+    </aside>
+    <article class="panel md-wrap">${topic ? hubHtml(topic, all) : /^topic:/.test(wikiSel || "") ? `<p class="none">That topic needs the wiki connected, or isn't known.</p>` : kbSel ? kbCard(kbSel) : pg ? `<div class="crumbs">wiki / ${esc(pg.path)}${pg.folder === "integrations" && pg.name !== "README.md" ? ` <button class="edit-ic" data-wpage="topic:w:${esc(pg.path)}">See everything on this topic</button>` : ""}</div>
+      ${used.length ? `<div class="usedby">Your cases on this page: ${used.map(c => `<button class="chip" data-open="${esc(c.case)}">${esc(c.case)}</button>`).join("")}</div>` : ""}
+      <div class="md">${md(pg.text, pg.path)}</div>` : ready ? `<p class="none">The wiki folder is empty.</p>` : connect}</article>
+    ${!ready ? "" : `
+    <aside class="panel files">
+      <h4>Files for the agents</h4>
+      <p class="muted small" style="margin:0">Saved to support-kit\\sources. The agents read them there; git never shares them. Don't add files with passwords or keys in them.</p>
+      <label class="lbl" for="upCase">For case (optional)</label>
+      <select id="upCase" class="inl"><option value="">No case</option>${openCases.map(c => `<option value="${esc(c.case)}">${esc(c.case)}</option>`).join("")}</select>
+      <div class="drop" id="drop"><b>Drop files here</b><br><label class="btn" for="upIn">Choose files</label><input type="file" id="upIn" multiple hidden></div>
+      <ul class="flist">${(srcFiles || []).map(f => { const c = caseOfFile(f.name);
+        return `<li><button class="fname" data-srcopen="${esc(f.name)}" title="Open ${esc(f.name)}">${esc(shownName(f.name))}</button>
+          <button class="btn subtle icon" data-srcdel="${esc(f.name)}" title="Delete" aria-label="Delete ${esc(f.name)}">✕</button>
+          <small>${c ? `<button class="chip" data-open="${esc(c.case)}">${esc(c.case)}</button> ` : ""}${fsize(f.size)} · ${new Date(f.at).toLocaleDateString("en-GB", {day:"numeric", month:"short"})}</small></li>`; }).join("") || `<li class="none" style="background:none">No files yet</li>`}</ul>
+    </aside>`}</div>`;
+  const q = document.getElementById("wq"); q.oninput = () => { wikiQ = q.value; document.getElementById("wnav").innerHTML = wikiNav(); };
+  if (!ready) return;
+  const sel = document.getElementById("upCase"); sel.value = upCase; sel.onchange = () => { upCase = sel.value; };
+  document.getElementById("upIn").onchange = e => { addFiles([...e.target.files]); e.target.value = ""; };
+  const dz = document.getElementById("drop");
+  dz.ondragover = e => { e.preventDefault(); dz.classList.add("over"); };
+  dz.ondragleave = () => dz.classList.remove("over");
+  dz.ondrop = e => { e.preventDefault(); dz.classList.remove("over"); addFiles([...e.dataTransfer.files]); };
+}
+document.addEventListener("click", async e => {
+  const w = e.target.closest("[data-wpage],[data-wlink],[data-wopen]");
+  if (w) { e.preventDefault();
+    const p = w.dataset.wpage || w.dataset.wlink || w.dataset.wopen;
+    if (!/^(kb|topic):/.test(p) && wiki && !wiki.pages.some(x => x.path === p)) return toast("That page isn't in the wiki");
+    if (w.dataset.wopen) { closeModals(); F.view = "wiki"; saveF(); }
+    wikiSel = p; render(); window.scrollTo(0, 0); return; }
+  if (e.target.closest("[data-act=sa-connect]")) return connectSA(false);
+  if (e.target.closest("[data-act=sa-pick]")) return connectSA(true);
+  if (e.target.closest("[data-act=wreload]")) { await loadWiki(); render(); return toast(saOk ? "Wiki reloaded" : "Access lost. Connect again"); }
+  const so = e.target.closest("[data-srcopen]"); if (so) { e.preventDefault(); return openSource(so.dataset.srcopen); }
+  const sd = e.target.closest("[data-srcdel]"); if (sd) return removeSource(sd.dataset.srcdel);
+});
+const startDemo = () => { if (!wiki && window.DEMO_WIKI) { wiki = {pages: window.DEMO_WIKI.slice().sort((a, b) => a.path.localeCompare(b.path)), at: new Date(), demo: true}; saOk = true; srcFiles = srcFiles || []; } };
+(async () => { if ("showDirectoryPicker" in window) await saInit(); startDemo(); render(); })();
+
+/* ---------- map tab: how the sources, the agent, the files and the board connect ---------- */
+const MAP_COLS = ["Where cases come from", "What the agent checks", "The agent", "Where it's kept", "Case Board", "What goes out"];
+const MAP_NODES = [
+  {id:"intercom", c:0, label:"Intercom", sub:"Client conversations", cov:["intercom"], info:"Read-only. /investigate and the check-up read conversations; replies are drafts you paste."},
+  {id:"slackc", c:0, label:"Slack client channels", sub:"Slack Connect threads", info:"Read by /investigate and the check-up. Anything posted there is a draft you send yourself."},
+  {id:"slacki", c:0, label:"Slack internal", sub:"#support, product, DMs", info:"#support, #support-product and #product-updates, each searched on its own, plus your DMs with the engineers you work with, on every case."},
+  {id:"gmail", c:0, label:"Gmail", sub:"Client emails", info:"The check-up searches it for cases that came in by email."},
+  {id:"jira", c:0, label:"Jira", sub:"Bug projects", info:"Past bugs and how they were fixed; the check-up reads ticket status. New bugs only after you say \"file it\"."},
+  {id:"wiki", c:1, label:"Wiki", sub:"Integrations, known issues", info:"Read before every verdict. The board's memory bank mirrors the integration pages, and the Wiki tab shows it live."},
+  {id:"platform", c:1, label:"Product platform", sub:"US and EU connectors", gap:true, cov:["platform"], info:"The client's live monitors and connections. The connector on this machine is not set to the client's company or region, so most cases skip it."},
+  {id:"backoffice", c:1, label:"Admin sheets", sub:"Company IDs, monitors", cov:["backoffice"], info:"Google Sheets through Drive: company ID, region and monitor names."},
+  {id:"helpc", c:1, label:"Help Center", sub:"Public user guides", info:"The public help center, read for how-to steps and setup requirements."},
+  {id:"github", c:1, label:"Monitor code", sub:"GitHub, no access here", gap:true, cov:["monitor-code"], info:"How a monitor decides, read from the code. Your GitHub login can't see those repos, so the agent uses monitor pages written from the code."},
+  {id:"grckb", c:1, label:"Compliance knowledge base", sub:"Framework questions", info:"Answers what a compliance framework requires."},
+  {id:"docs", c:1, label:"Internal docs and calls", sub:"Docs, call recordings", info:"Internal support pages and recorded customer calls."},
+  {id:"sources", c:1, label:"sources folder", sub:"Files you add (Wiki tab)", info:"support-kit\\sources: screenshots, exports and logs for the agents. Never shared. A file named after a case is read with that case."},
+  {id:"datadog", c:1, label:"Datadog and Airflow", sub:"Not wired: you paste", gap:true, cov:["datadog", "airflow"], info:"No connector. The agent gives you a Bits prompt and you paste what Bits returns."},
+  {id:"investigate", c:2, label:"/investigate", sub:"Ticket to case file", info:"Who and what, what happened before, what the systems show, a verdict and the next thing to send."},
+  {id:"closeout", c:2, label:"/close-out", sub:"What fixed it, to the wiki", info:"Asks what fixed the case, writes it into the right wiki page and closes the case file."},
+  {id:"refine", c:2, label:"/refine", sub:"Your corrections", info:"What the agent got wrong goes into the wiki page the agent reads."},
+  {id:"checkup", c:2, label:"08:30 check-up", sub:"Weekdays, read-only", info:"Reads every open case's source, flags solved, waiting and quiet cases, applies your board moves and refreshes the board data."},
+  {id:"cases", c:3, label:"cases folder", sub:"One file per case", info:"support-kit\\cases. Stays on this computer."},
+  {id:"wikiup", c:3, label:"Wiki updates", sub:"Shared by pull request", info:"/close-out and /refine write the wiki; /share-learning sends it to the team for review."},
+  {id:"activity", c:3, label:"Activity log", sub:"Weekly numbers", info:"One line per verdict and close-out, read by the weekly report."},
+  {id:"rules", c:4, label:"BOARD-RULES.md", sub:"How the agent applies edits", info:"The rules the agent and the check-up follow for your moves, fields, comments and memory notes."},
+  {id:"data", c:4, label:"case-board-data.js", sub:"Cases, details, check-up", info:"Built from the case files and the wiki's integration pages by the agent and the check-up."},
+  {id:"page", c:4, label:"Board page", sub:"Board, List, Wiki, Map", info:"This page. It reads the data file and saves your changes."},
+  {id:"edits", c:4, label:"board-edits.js", sub:"Your moves and notes", info:"Written by this page once Connect folder is on. The agent never writes it."},
+  {id:"reply", c:5, label:"Client replies", sub:"Drafts you paste", info:"Intercom and Slack Connect replies. The agent never writes to a client."},
+  {id:"slackdraft", c:5, label:"Slack drafts", sub:"#support posts, dev DMs", info:"Saved as drafts in your Slack; you send them."},
+  {id:"jirabug", c:5, label:"Jira bugs", sub:"Only after \"file it\"", info:"Preview first, then your \"file it\", a duplicate check and a permission box."},
+  {id:"report", c:5, label:"Weekly report", sub:"Numbers only, Mondays", info:"Posts itself to the report channel: counts and areas, no client names."},
+  {id:"pr", c:5, label:"Team pull request", sub:"/share-learning, reviewed", info:"Your wiki changes go to the rest of the support team once the maintainer merges them."}
+];
+/* [from, to, kind, what]: kind is read, manual (you do it by hand) or write. */
+const MAP_EDGES = [
+  ["intercom","investigate","read","the ticket"], ["slackc","investigate","read","the ticket"], ["slacki","investigate","read","past threads, DMs"], ["jira","investigate","read","past bugs"],
+  ["intercom","checkup","read","latest messages"], ["slackc","checkup","read","latest replies"], ["gmail","checkup","read","email cases"], ["jira","checkup","read","ticket status"],
+  ["wiki","investigate","read","fixes, expected behaviour"], ["platform","investigate","read","live monitors"], ["backoffice","investigate","read","IDs and regions"], ["helpc","investigate","read","guides"],
+  ["github","investigate","read","monitor logic"], ["grckb","investigate","read","framework answers"], ["docs","investigate","read","internal pages"], ["sources","investigate","read","your files"],
+  ["datadog","investigate","manual","Bits output you paste"],
+  ["investigate","cases","write","case file"], ["closeout","cases","write","closes it"], ["checkup","cases","write","status lines you moved"],
+  ["closeout","wikiup","write","the fix"], ["refine","wikiup","write","your correction"], ["investigate","activity","write","verdict"], ["closeout","activity","write","close-out"],
+  ["cases","data","read","rows and details"], ["checkup","data","write","signals"], ["data","page","read","what you see"], ["page","edits","write","your changes"], ["edits","checkup","read","applies your moves"],
+  ["investigate","reply","write","draft"], ["investigate","slackdraft","write","draft"], ["investigate","jirabug","manual","after \"file it\""], ["activity","report","write","Mondays"], ["wikiup","pr","manual","when you say share it"]
+];
+let mapPin = null;
+function renderMap(){
+  const W = 176, H = 50, GX = 206, GY = 12, TOP = 40, X0 = 8, rows = {};
+  for (const n of MAP_NODES) n.r = rows[n.c] = (rows[n.c] ?? -1) + 1;
+  const maxR = Math.max(...Object.values(rows)) + 1, total = maxR * (H + GY) - GY, svgH = TOP + total + 44;
+  const cov = DATA.coverage || null, P = {};
+  for (const n of MAP_NODES) P[n.id] = {x: X0 + n.c * GX, y: TOP + (total - ((rows[n.c] + 1) * (H + GY) - GY)) / 2 + n.r * (H + GY), n};
+  const path = (a, b) => {
+    if (b.n.c > a.n.c) { const sx = a.x + W, sy = a.y + H / 2, tx = b.x - 4, ty = b.y + H / 2, d = (tx - sx) / 2; return `M${sx},${sy} C${sx + d},${sy} ${tx - d},${ty} ${tx},${ty}`; }
+    if (b.n.c === a.n.c) { const x = a.x + W / 2; return b.y > a.y ? `M${x},${a.y + H} L${x},${b.y - 4}` : `M${x},${a.y} L${x},${b.y + H + 4}`; }
+    const low = svgH - 10; return `M${a.x + W / 2},${a.y + H} C${a.x + W / 2},${low} ${b.x + W / 2},${low} ${b.x + W / 2},${b.y + H + 4}`;
+  };
+  const covOf = n => cov && n.cov ? n.cov.reduce((s, k) => Math.max(s, cov.counts[k] || 0), 0) : 0;
+  const svg = `<svg class="map" viewBox="0 0 ${X0 * 2 + 5 * GX + W} ${svgH}" role="img" aria-label="How the sources, the agent, the files and the board connect">
+    <defs><marker id="ah" viewBox="0 0 8 8" refX="7" refY="4" markerWidth="7" markerHeight="7" orient="auto"><path class="ah" d="M0,0 L8,4 L0,8z"/></marker></defs>
+    ${MAP_COLS.map((t, c) => `<text class="ch" x="${X0 + c * GX}" y="16">${esc(t)}</text>`).join("")}
+    ${MAP_EDGES.map(([f, t, k], i) => `<path class="edge${k === "read" ? "" : " " + k}" data-edge="${i}" d="${path(P[f], P[t])}" marker-end="url(#ah)"/>`).join("")}
+    ${MAP_NODES.map(n => { const {x, y} = P[n.id], cv = covOf(n);
+      return `<g class="node${n.gap ? " gap" : ""}" data-node="${n.id}" transform="translate(${x},${y})" tabindex="0"><title>${esc(n.info)}</title><rect class="nr" width="${W}" height="${H}" rx="9"/>
+        <text class="nl" x="12" y="21">${esc(n.label)}</text><text class="ns" x="12" y="38">${esc(n.sub)}</text>
+        ${cv ? `<g class="nb"><rect x="${W - 44}" y="-9" width="50" height="18" rx="9"/><text x="${W - 19}" y="4" text-anchor="middle">${cv}/${cov.cases}</text></g>` : ""}</g>`; }).join("")}
+  </svg>`;
+  const top = cov ? Object.entries(cov.counts).sort((a, b) => b[1] - a[1]) : [];
+  const COVL = {platform:"Platform", "monitor-code":"Monitor code", datadog:"Datadog", airflow:"Airflow", backoffice:"Admin sheet", screenshot:"Screenshot", intercom:"Intercom"};
+  document.getElementById("view").innerHTML = `<div class="panel">
+      <div class="mapbox">${svg}</div>
+      <div class="legend"><span><i></i>Read automatically</span><span><i class="m"></i>You do it by hand</span><span><i class="w"></i>Written or sent</span><span><i class="g"></i>A gap: the agent can't reach it</span><span>Badge: cases where it couldn't check this</span></div>
+    </div>
+    <div class="mapgrid">
+      <div class="panel minfo" id="mapInfo">${mapInfo(mapPin)}</div>
+      <div class="panel cov"><h4>What the agent couldn't check</h4>
+        ${cov ? `<p class="muted small" style="margin:0 0 8px">Across ${cov.cases} case files, as of ${fmt(cov.date)}.</p>${top.map(([k, n]) => `<div class="row"><span>${esc(COVL[k] || k)}</span><div class="bar"><span style="width:${n / cov.cases * 100}%"></span></div><b>${n}</b></div>`).join("")}` : `<p class="none">No numbers yet. The next check-up adds them.</p>`}
+      </div>
+    </div>`;
+  const s = document.querySelector("svg.map");
+  const focus = id => {
+    s.classList.toggle("focus", !!id); s.querySelectorAll(".hi").forEach(x => x.classList.remove("hi"));
+    if (!id) return;
+    s.querySelector(`[data-node="${id}"]`).classList.add("hi");
+    MAP_EDGES.forEach(([f, t], i) => { if (f === id || t === id) { s.querySelector(`[data-edge="${i}"]`).classList.add("hi"); s.querySelector(`[data-node="${f === id ? t : f}"]`).classList.add("hi"); } });
+  };
+  s.addEventListener("mouseover", e => { const g = e.target.closest("[data-node]"); if (g) focus(g.dataset.node); });
+  s.addEventListener("mouseleave", () => focus(mapPin));
+  s.addEventListener("click", e => { const g = e.target.closest("[data-node]"); mapPin = g && g.dataset.node !== mapPin ? g.dataset.node : null; focus(mapPin); document.getElementById("mapInfo").innerHTML = mapInfo(mapPin); });
+  s.addEventListener("keydown", e => { const g = e.target.closest("[data-node]"); if (g && e.key === "Enter") g.dispatchEvent(new MouseEvent("click", {bubbles:true})); });
+  focus(mapPin);
+}
+function mapInfo(id){
+  const n = MAP_NODES.find(x => x.id === id), lab = x => MAP_NODES.find(m => m.id === x).label;
+  if (!n) return `<h4>How it connects</h4><p class="muted" style="margin:0">Hover a box to see its links. Click one to keep it highlighted and read what it does.</p>`;
+  const from = MAP_EDGES.filter(e => e[1] === id), to = MAP_EDGES.filter(e => e[0] === id);
+  return `<h4>${esc(n.label)}</h4><p style="margin:0">${esc(n.info)}</p><dl>
+    ${from.length ? `<dt>From</dt><dd>${from.map(e => `${esc(lab(e[0]))} <span class="muted">(${esc(e[3])}${e[2] === "manual" ? ", by hand" : ""})</span>`).join("<br>")}</dd>` : ""}
+    ${to.length ? `<dt>To</dt><dd>${to.map(e => `${esc(lab(e[1]))} <span class="muted">(${esc(e[3])}${e[2] === "manual" ? ", by hand" : ""})</span>`).join("<br>")}</dd>` : ""}</dl>`;
+}
+
+/* ---------- today strip: only what needs you ---------- */
+function renderToday(all){
+  const el = document.getElementById("today");
+  if (!window.BOARD_DATA) { el.innerHTML = `<div class="today"><div class="tg" style="--tc:var(--bad);max-width:none"><div class="tg-h"><span class="dot"></span>Case data not found</div><div class="tc">This page can't find case-board-data.js next to it, so no cases show. Open the page from the Desktop\\case-board folder, and keep both files together.</div></div></div>`; return; }
+  el.innerHTML = ""; return; /* Today strip is off; only the missing-data warning shows. */
+  const open = all.filter(c => !c.isClosed), sig = c => sigOf(c) || {};
+  const onUs = c => sig(c).on === "us" || (!sig(c).on && /^on us\b/i.test(sig(c).note || ""));
+  const groups = [
+    ["On you", "var(--brand)", open.filter(onUs), c => sig(c).note],
+    ["Follow-ups due", "var(--bad)", open.filter(c => c.follow_up && c.follow_up <= today()), c => "Due " + fmt(c.follow_up)],
+    ["Ready to close", "var(--ok)", open.filter(c => sig(c).signal === "solved"), c => sig(c).note],
+    ["Gone quiet", "var(--wait)", open.filter(c => sig(c).signal === "quiet"), c => sig(c).note]
+  ].filter(g => g[2].length);
+  el.innerHTML = `<div class="today"><div class="today-h"><b>Today</b><span>${CHECKUP ? "Check-up " + fmt(CHECKUP.date) : "No check-up yet"}</span></div>
+    ${groups.map(([t, col, list, sub]) => `<div class="tg" style="--tc:${col}"><div class="tg-h"><span class="dot"></span>${t}<span class="n">${list.length}</span></div>
+      ${list.map(c => `<button class="tc" data-open="${esc(c.case)}" title="${esc(sub(c) || "")}"><b>${esc(c.case)}</b><small>${esc(sub(c) || "")}</small></button>`).join("")}</div>`).join("")
+      || `<div class="none">Nothing needs you today.</div>`}</div>`;
+}
+
+/* ---------- ctrl+k: search cases, tickets, contacts and the wiki ---------- */
+const kModal = document.getElementById("kModal"), kq = document.getElementById("kq"), kres = document.getElementById("kres");
+let kSel = 0, kList = [];
+const rxEsc = s => s.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+const hl = (s, words) => {
+  const ws = words.filter(w => w.length > 1); s = String(s ?? "");
+  if (!ws.length) return esc(s);
+  return s.split(new RegExp("(" + ws.map(rxEsc).join("|") + ")", "ig")).map((p, i) => i % 2 ? `<mark>${esc(p)}</mark>` : esc(p)).join("");
+};
+function openK(){ closePop(); kModal.classList.add("on"); kq.value = ""; kSearch(); kq.focus(); }
+function kSearch(){
+  const words = kq.value.toLowerCase().split(/\s+/).filter(Boolean), all = items(), out = [];
+  topicMatches(kq.value).slice(0, 6).forEach(t => out.push({kind:"topic", key:t.key, title:t.title, sub:t.sub}));
+  const has = s => words.every(w => s.toLowerCase().includes(w));
+  all.filter(c => { const d = detailsOf(c); return words.length ? has([c.case, ...(c.tickets || []), c.company_id, c.contact, c.monitor, c.region, VERDICT[c.verdict], c.col.label, d.summary, d.cause, d.next].join(" ")) : !c.isClosed; })
+    .slice(0, words.length ? 8 : 6)
+    .forEach(c => out.push({kind:"case", c, title:c.case, sub:[c.col.label, (c.tickets || []).join(", "), c.contact, c.company_id].filter(Boolean).join(" · ")}));
+  if (wiki && words.length) wiki.pages.filter(p => has(p.title + " " + p.path + " " + p.text)).slice(0, 8).forEach(p => {
+    const i = p.text.toLowerCase().indexOf(words[0]);
+    const snip = i < 0 ? p.path : (i > 50 ? "…" : "") + p.text.slice(Math.max(0, i - 50), i + 100).replace(/[#*`|>\[\]]/g, "").replace(/\s+/g, " ").trim() + "…";
+    out.push({kind:"wiki", p, title:p.title, sub:snip});
+  });
+  if (words.length) KB.map((it, i) => ({it, i})).filter(x => kbHit(x.it, words)).slice(0, 8)
+    .forEach(({it, i}) => out.push({kind:"kb", i, title:it.title, sub:`${KBSRC[it.src]} · ${it.summary || it.path} · edited ${fmt(it.edited)}`}));
+  [["board","Board"],["list","List"],["closed","Closed"],["wiki","Wiki"],["map","Map"]].filter(([v, t]) => !words.length || has(t + " tab")).forEach(([v, t]) => out.push({kind:"tab", v, title:"Go to " + t, sub:""}));
+  kList = out; kSel = 0;
+  const LBL = {topic:"Topics", case: words.length ? "Cases" : "Open cases", wiki:"Wiki", kb:"Notion and Help Center", tab:"Go to"};
+  let last = "";
+  kres.innerHTML = out.map((r, i) => { const head = r.kind !== last ? `<h6>${LBL[r.kind]}</h6>` : ""; last = r.kind;
+    return `${head}<button class="kr${i === 0 ? " on" : ""}" data-k="${i}">${r.kind === "case" ? (r.c.kind === "task" ? ICON.task : (r.c.tickets || []).length ? ICON.bug : ICON.case) : r.kind === "wiki" || r.kind === "kb" ? ICON.link : `<span class="muted" style="width:16px;text-align:center">→</span>`}<span><b>${hl(r.title, words)}</b>${r.sub ? `<small>${hl(r.sub, words)}</small>` : ""}</span></button>`; }).join("")
+    + (!out.length ? `<p class="none" style="padding:14px">Nothing matches.</p>` : "")
+    + (!wiki && words.length ? `<div class="khint">The wiki isn't searched until you connect it on the Wiki tab.</div>` : "");
+}
+function kMove(d){ if (!kList.length) return; kSel = (kSel + d + kList.length) % kList.length; kres.querySelectorAll(".kr").forEach((b, i) => b.classList.toggle("on", i === kSel)); kres.querySelector(".kr.on")?.scrollIntoView({block:"nearest"}); }
+function kGo(i){
+  const r = kList[i]; if (!r) return; kModal.classList.remove("on");
+  if (r.kind === "case") openCase(r.c.case);
+  else if (r.kind === "wiki") { F.view = "wiki"; wikiSel = r.p.path; saveF(); render(); window.scrollTo(0, 0); }
+  else if (r.kind === "topic") { F.view = "wiki"; wikiSel = r.key; saveF(); render(); window.scrollTo(0, 0); }
+  else if (r.kind === "kb") { F.view = "wiki"; wikiSel = "kb:" + r.i; saveF(); render(); window.scrollTo(0, 0); }
+  else { F.view = r.v; saveF(); render(); }
+}
+kq.addEventListener("input", kSearch);
+kq.addEventListener("keydown", e => {
+  if (e.key === "ArrowDown") { e.preventDefault(); kMove(1); }
+  if (e.key === "ArrowUp") { e.preventDefault(); kMove(-1); }
+  if (e.key === "Enter") { e.preventDefault(); kGo(kSel); }
+});
+kres.addEventListener("click", e => { const b = e.target.closest("[data-k]"); if (b) kGo(+b.dataset.k); });
+document.getElementById("kBtn").onclick = openK;
+document.addEventListener("keydown", e => { if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === "k") { e.preventDefault(); if (kModal.classList.contains("on")) closeModals(); else { closeModals(); openK(); } } });
+
+/* ---------- copy changes (fallback) ---------- */
+async function copyChanges(){
+  const lines = ["Case board changes (" + today() + "), please apply:"];
+  for (const c of items()) {
+    if (c.pending) lines.push(`- New: ${c.case} | ${c.col.label} | opened ${c.opened}` + (c.region ? ` | ${c.region}` : "") + (c.tickets.length ? ` | ${c.tickets.join(", ")}` : "") + (c.source ? ` | ${c.source}` : "") + (c.note ? ` | ${c.note}` : ""));
+    else if (c.moved) lines.push(c.isClosed ? `- Close out: ${c.case}` : `- Move: ${c.case} from ${STATUS_LABEL[c.status] || c.status} to ${STATUS_LABEL[c.col.status]}`);
+  }
+  for (const c of items()) {
+    const f = edits.fields[c.case] || {};
+    for (const k of c.fileEdits) lines.push(`- Edit ${c.case}: ${k} = ${Array.isArray(c[k]) ? c[k].join(", ") : c[k] || "(empty)"} (case file)`);
+    for (const fd of FIELDS.filter(x => !x.file && x.k in f)) lines.push(`- Board field on ${c.case}: ${fd.label} = ${f[fd.k] || "(empty)"}`);
+    for (const [k, v] of Object.entries(f.custom || {})) lines.push(`- Board field on ${c.case}: ${k} = ${v}`);
+    if ("next" in f) lines.push(`- Next step on ${c.case}: ${f.next}`);
+  }
+  for (const n of newNotes()) lines.push(`- Comment on ${n.case}: ${n.text}`);
+  for (const [n, list] of Object.entries(edits.memory)) for (const m of list) if (!DATA.notes_seen || m.at > DATA.notes_seen) lines.push(`- Memory note on ${n}: ${m.text}`);
+  if (lines.length === 1) return toast("Nothing for the agent to apply");
+  const text = lines.join("\n");
+  try { await navigator.clipboard.writeText(text); toast("Copied. Paste it into the chat."); }
+  catch { prompt("Copy this and paste it into the chat:", text); }
+}
+
+let tt; function toast(m){ const t = document.getElementById("toast"); document.getElementById("toastText").textContent = m; t.classList.add("on"); clearTimeout(tt); tt = setTimeout(() => t.classList.remove("on"), 2600); }
+if (!["board","list","closed","wiki","map"].includes(F.view)) F.view = "board";
+reconcile(); render(); showSave();
+(() => {
+  startDemo();
+  const p = new URLSearchParams(location.hash.slice(1));
+  if (p.get("theme")) document.documentElement.dataset.theme = p.get("theme");
+  if (p.get("view")) { F.view = p.get("view"); render(); }
+  if (p.get("wiki")) { startDemo(); F.view = "wiki"; wikiSel = p.get("wiki"); wikiQ = p.get("q") || ""; render(); }
+  if (p.get("case")) openCase(p.get("case"));
+  if (p.get("scroll")) setTimeout(() => document.querySelector("." + p.get("scroll"))?.scrollIntoView({block:"start"}), 0);
+  if (p.get("search")) { openK(); kq.value = p.get("search"); kSearch(); }
+})();
+</script>
+</body>
+</html>
